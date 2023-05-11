@@ -2,9 +2,9 @@
 # Devem alterar as classes e funções neste ficheiro de acordo com as instruções do enunciado.
 # Além das funções e classes já definidas, podem acrescentar outras que considerem pertinentes.
 
-# Grupo 00:
-# 00000 Nome1
-# 00000 Nome2
+# Grupo 80:
+# 103938 José António Lopes
+# 104139 Rodrigo Manuel Friães
 
 import sys
 from search import (
@@ -52,16 +52,16 @@ class Board:
             return (None, self.get_value(row + 1, col))
         else:
             return (self.get_value(row - 1, col), None)
-    
+
     def adjacent_horizontal_values(self, row: int, col: int) -> (str, str):
         """Devolve os valores imediatamente à esquerda e à direita,
         respectivamente."""
         if 0 < col < 9:
-            return (self.get_value(row, col - 1), self.get_value(row, col + 1)) 
+            return (self.get_value(row, col - 1), self.get_value(row, col + 1))
         elif col == 0:
-            return (None, self.get_value(row, col + 1)) 
+            return (None, self.get_value(row, col + 1))
         else:
-            return(self.get_value(row, col - 1), None)
+            return (self.get_value(row, col - 1), None)
 
     @staticmethod
     def parse_instance():
@@ -80,10 +80,10 @@ class Board:
         while line := sys.stdin.readline().split():
             if line[0] == "ROW":
                 for row_hint, index in zip(line[1:], range(10)):
-                    board[0][index] = int(row_hint) 
+                    board[0][index] = int(row_hint)
             elif line[0] == "COLUMN":
                 for col_hint, index in zip(line[1:], range(10)):
-                    board[1][index] = int(col_hint) 
+                    board[1][index] = int(col_hint)
             elif line[0] == "HINT":
                 row = int(line[1])
                 col = int(line[2])
@@ -92,14 +92,20 @@ class Board:
                 board[row + 2][col] = hint
         return Board(board)
 
-    # TODO: outros metodos da classe
+    def print(self):
+        for i in range(2, len(self.board_representation)):
+            for j in range(len(self.board_representation[0])):
+                if not self.board_representation[i][j]:
+                    print(".", end="")
+                else:
+                    print(f"{self.board_representation[i][j]}", end="")
+            print("")
 
 
 class Bimaru(Problem):
     def __init__(self, board: Board):
         """O construtor especifica o estado inicial."""
-        # TODO
-        pass
+        self.initial = BimaruState(board)
 
     def actions(self, state: BimaruState):
         """Retorna uma lista de ações que podem ser executadas a
@@ -119,8 +125,27 @@ class Bimaru(Problem):
         """Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se todas as posições do tabuleiro
         estão preenchidas de acordo com as regras do problema."""
-        # TODO
-        pass
+        line_sum = 0
+        column_sum = 0
+        # Line check
+        # - 2 to count for the + 2 after
+        for i in range(len(state.board.board_representation) - 2):
+            for j in range(len(state.board.board_representation[0])):
+                if state.board.board_representation[i + 2][j] not in (None, 'w', 'W'):
+                    line_sum += 1
+#            if state.board.board_representation[0][i] != line_sum:
+#                return False
+            line_sum = 0
+
+        # Column check
+        # - 2 to count for the + 2 after
+        for j in range(len(state.board.board_representation) - 2):
+            for i in range(len(state.board.board_representation[0])):
+                if state.board.board_representation[i + 2][j] not in (None, 'w', 'W'):
+                    column_sum += 1
+#            if state.board.board_representation[1][j] != column_sum:
+#               return False
+            column_sum = 0
 
     def h(self, node: Node):
         """Função heuristica utilizada para a procura A*."""
@@ -138,6 +163,12 @@ if __name__ == "__main__":
     print(board.adjacent_horizontal_values(3, 3))
     print(board.adjacent_vertical_values(9, 0))
     print(board.adjacent_horizontal_values(0, 9))
+
+    board.print()
+
+    bimaru_state = BimaruState(board)
+    problem = Bimaru(board)
+    problem.goal_test(bimaru_state)
     # TODO:
     # Ler o ficheiro do standard input,
     # Usar uma técnica de procura para resolver a instância,

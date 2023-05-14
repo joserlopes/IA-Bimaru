@@ -29,6 +29,8 @@ class BimaruState:
     def __lt__(self, other):
         return self.id < other.id
 
+    def put_submarine(self, row, column):
+        pass
     # TODO: outros metodos da classe
 
 
@@ -50,8 +52,10 @@ class Board:
             return (self.get_value(row - 1, col), self.get_value(row + 1, col))
         elif row == 0:
             return (None, self.get_value(row + 1, col))
-        else:
+        elif row == 9:
             return (self.get_value(row - 1, col), None)
+        else:
+            return (None, None)
 
     def adjacent_horizontal_values(self, row: int, col: int) -> (str, str):
         """Devolve os valores imediatamente à esquerda e à direita,
@@ -60,8 +64,34 @@ class Board:
             return (self.get_value(row, col - 1), self.get_value(row, col + 1))
         elif col == 0:
             return (None, self.get_value(row, col + 1))
-        else:
+        elif col == 9:
             return (self.get_value(row, col - 1), None)
+        else:
+            return (None, None)
+
+    def adjacent_diagonal_values_ascending(self, row: int, col: int) -> (str, str):
+        if 0 < row < 9 and 0 < col < 9:
+            return (self.get_value(row + 1, col - 1), self.get_value(row - 1, col + 1))
+        # Only has the right diagonal
+        elif (col == 0 and row != 0) or (row == 9 and col != 9):
+            return (None, self.get_value(row - 1, col + 1))
+        # Only has the left diagonal
+        elif (col == 9 and row != 9) or (row == 0 and col != 0):
+            return (self.get_value(row + 1, col - 1), None)
+        else:
+            return (None, None)
+
+    def adjacent_diagonal_values_descending(self, row: int, col: int) -> (str, str):
+        if 0 < row < 9 and 0 < col < 9:
+            return (self.get_value(row - 1, col - 1), self.get_value(row + 1, col + 1))
+        # Only has the right diagonal 
+        elif (col == 0 and row != 0) or (row == 0 and col != 9):
+            return (None, self.get_value(row + 1, col + 1))
+        # Only has the left diagonal
+        elif (col == 9 and row != 9) or (row == 0 and col != 0):
+            return (self.get_value(row - 1, col - 1), None)
+        else:
+            return (None, None)
 
     @staticmethod
     def parse_instance():
@@ -93,12 +123,12 @@ class Board:
         return Board(board)
 
     def print(self):
-        for i in range(2, len(self.board_representation)):
+        for i in range(len(self.board_representation) - 2):
             for j in range(len(self.board_representation[0])):
-                if not self.board_representation[i][j]:
+                if not self.get_value(i, j):
                     print(".", end="")
                 else:
-                    print(f"{self.board_representation[i][j]}", end="")
+                    print(f"{self.get_value(i, j)}", end="")
             print("")
 
 
@@ -159,16 +189,8 @@ if __name__ == "__main__":
 
     board = Board.parse_instance()
 
-    print(board.adjacent_vertical_values(3, 3))
-    print(board.adjacent_horizontal_values(3, 3))
-    print(board.adjacent_vertical_values(9, 0))
-    print(board.adjacent_horizontal_values(0, 9))
-
     board.print()
-
-    bimaru_state = BimaruState(board)
-    problem = Bimaru(board)
-    problem.goal_test(bimaru_state)
+    print(board.adjacent_diagonal_values_descending(0, 0))
     # TODO:
     # Ler o ficheiro do standard input,
     # Usar uma técnica de procura para resolver a instância,

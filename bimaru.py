@@ -29,8 +29,21 @@ class BimaruState:
     def __lt__(self, other):
         return self.id < other.id
 
-    def put_submarine(self, row, column):
-        pass
+    def put_submarine(self):
+        board = self.board
+        for i in range(10): 
+            for j in range(10):
+                if not board.get_value(i, j):
+                    # + 2 to count with the two hint-related lines
+                    row, col = i, j
+                    break
+        # horizontal_neighbours = board.adjacent_horizontal_values(board, row, col)
+        # vertical_neighbours = board.adjacent_vertical_values(board, row, col)
+        # diagonal_neighbours = (board.adjacent_diagonal_values_ascending(board, row, col), 
+        #                        board.adjacent_diagonal_values_descending(board, row, col))
+        board.put_piece(row, col, 'c')
+        return BimaruState(board)
+        
     # TODO: outros metodos da classe
 
 
@@ -131,6 +144,9 @@ class Board:
                     print(f"{self.get_value(i, j)}", end="")
             print("")
 
+    def put_piece(self, row, col, piece_type):
+        self.board_representation[row + 2][col] = piece_type
+
 
 class Bimaru(Problem):
     def __init__(self, board: Board):
@@ -141,41 +157,46 @@ class Bimaru(Problem):
         """Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""
         # TODO
-        pass
+        return ["put_submarine"]
 
     def result(self, state: BimaruState, action):
         """Retorna o estado resultante de executar a 'action' sobre
         'state' passado como argumento. A ação a executar deve ser uma
         das presentes na lista obtida pela execução de
         self.actions(state)."""
-        # TODO
-        pass
+        if action == "put_submarine":
+            return state.put_submarine()
 
     def goal_test(self, state: BimaruState):
         """Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se todas as posições do tabuleiro
         estão preenchidas de acordo com as regras do problema."""
-        line_sum = 0
-        column_sum = 0
-        # Line check
-        # - 2 to count for the + 2 after
-        for i in range(len(state.board.board_representation) - 2):
-            for j in range(len(state.board.board_representation[0])):
-                if state.board.board_representation[i + 2][j] not in (None, 'w', 'W'):
-                    line_sum += 1
-#            if state.board.board_representation[0][i] != line_sum:
-#                return False
-            line_sum = 0
+        # line_sum = 0
+        # column_sum = 0
+        # # Line check
+        # # - 2 to count for the + 2 after
+        # for i in range(len(state.board.board_representation) - 2):
+        #     for j in range(len(state.board.board_representation[0])):
+        #         if state.board.board_representation[i + 2][j] not in (None, 'w', 'W'):
+        #             line_sum += 1
+        #     if state.board.board_representation[0][i] != line_sum:
+        #         return False
+        #     line_sum = 0
 
-        # Column check
-        # - 2 to count for the + 2 after
-        for j in range(len(state.board.board_representation) - 2):
-            for i in range(len(state.board.board_representation[0])):
-                if state.board.board_representation[i + 2][j] not in (None, 'w', 'W'):
-                    column_sum += 1
-#            if state.board.board_representation[1][j] != column_sum:
-#               return False
-            column_sum = 0
+        # # Column check
+        # # - 2 to count for the + 2 after
+        # for j in range(len(state.board.board_representation) - 2):
+        #     for i in range(len(state.board.board_representation[0])):
+        #         if state.board.board_representation[i + 2][j] not in (None, 'w', 'W'):
+        #             column_sum += 1
+        #     if state.board.board_representation[1][j] != column_sum:
+        #         return False
+        #     column_sum = 0
+        for i in range(10):
+            for j in range(10):
+                if state.board.get_value(i, j) not in ('C', 'c'):
+                    return False
+        return True
 
     def h(self, node: Node):
         """Função heuristica utilizada para a procura A*."""
@@ -189,8 +210,12 @@ if __name__ == "__main__":
 
     board = Board.parse_instance()
 
-    board.print()
-    print(board.adjacent_diagonal_values_descending(0, 0))
+    problem = Bimaru(board)
+
+    solution_node = breadth_first_tree_search(problem)
+
+    solution_node.state.board.print()
+
     # TODO:
     # Ler o ficheiro do standard input,
     # Usar uma técnica de procura para resolver a instância,

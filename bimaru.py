@@ -16,6 +16,7 @@ from search import (
     greedy_search,
     recursive_best_first_search,
 )
+
 import numpy as np
 
 
@@ -30,14 +31,18 @@ class BimaruState:
     def __lt__(self, other):
         return self.id < other.id
 
+    def put_1_piece(self):
+        pass
+
     # TODO: outros metodos da classe
 
 
 class Board:
     """Representação interna de um tabuleiro de Bimaru."""
 
-    def __init__(self, board_representation: list):
+    def __init__(self, board_representation: list, avaliable_boats: dict):
         self.board_representation = board_representation
+        self.avaliable_boats = avaliable_boats
 
     def get_value(self, row: int, col: int) -> str:
         """Devolve o valor na respetiva posição do tabuleiro."""
@@ -45,52 +50,60 @@ class Board:
         return self.board_representation[row + 2][col]
 
     def adjacent_vertical_values(self, row: int, col: int) -> (str, str):
-        """Devolve os valores imediatamente acima e abaixo,
-        respectivamente."""
-        if 0 < row < 9:
-            return (self.get_value(row - 1, col), self.get_value(row + 1, col))
-        elif row == 0:
-            return (None, self.get_value(row + 1, col))
-        elif row == 9:
-            return (self.get_value(row - 1, col), None)
-        else:
-            return (None, None)
-
-    def adjacent_horizontal_values(self, row: int, col: int) -> (str, str):
         """Devolve os valores imediatamente à esquerda e à direita,
         respectivamente."""
-        if 0 < col < 9:
-            return (self.get_value(row, col - 1), self.get_value(row, col + 1))
-        elif col == 0:
-            return (None, self.get_value(row, col + 1))
-        elif col == 9:
-            return (self.get_value(row, col - 1), None)
-        else:
-            return (None, None)
+        board = self.board_representation
+        adjacents = ()
+        rows_num = len(board) - 2
+        for i in (-1, 1):
+            new_row = row + i
+            if 0 <= new_row < rows_num:
+                adjacents += (self.get_value(new_row, col),)
+            else:
+                adjacents += (None,)
+        return adjacents
+
+    def adjacent_horizontal_values(self, row: int, col: int) -> (str, str):
+        """Devolve os valores imediatamente acima e abaixo,
+        respectivamente."""
+        board = self.board_representation
+        adjacents = ()
+        cols_num = len(board[0])
+        for i in (-1, 1):
+            new_col = col + i
+            if 0 <= new_col < cols_num:
+                adjacents += (self.get_value(row, new_col),)
+            else:
+                adjacents += (None,)
+        return adjacents
 
     def adjacent_diagonal_values_ascending(self, row: int, col: int) -> (str, str):
-        if 0 < row < 9 and 0 < col < 9:
-            return (self.get_value(row + 1, col - 1), self.get_value(row - 1, col + 1))
-        # Only has the right diagonal
-        elif (col == 0 and row != 0) or (row == 9 and col != 9):
-            return (None, self.get_value(row - 1, col + 1))
-        # Only has the left diagonal
-        elif (col == 9 and row != 9) or (row == 0 and col != 0):
-            return (self.get_value(row + 1, col - 1), None)
-        else:
-            return (None, None)
+        board = self.board_representation
+        adjacents = ()
+        cols_num = len(board[0])
+        rows_num = len(board)
+        for i in ((1, -1), (-1, 1)):
+            new_row = row + i[0]
+            new_col = col + i[1]
+            if 0 <= new_row < rows_num and 0 <= new_col < cols_num:
+                adjacents += (self.get_value(new_row, new_col),)
+            else:
+                adjacents += (None,)
+        return adjacents
 
     def adjacent_diagonal_values_descending(self, row: int, col: int) -> (str, str):
-        if 0 < row < 9 and 0 < col < 9:
-            return (self.get_value(row - 1, col - 1), self.get_value(row + 1, col + 1))
-        # Only has the right diagonal
-        elif (col == 0 and row != 0) or (row == 0 and col != 9):
-            return (None, self.get_value(row + 1, col + 1))
-        # Only has the left diagonal
-        elif (col == 9 and row != 9) or (row == 0 and col != 0):
-            return (self.get_value(row - 1, col - 1), None)
-        else:
-            return (None, None)
+        board = self.board_representation
+        adjacents = ()
+        cols_num = len(board[0])
+        rows_num = len(board)
+        for i in ((-1, -1), (1, 1)):
+            new_row = row + i[0]
+            new_col = col + i[1]
+            if 0 <= new_row < rows_num and 0 <= new_col < cols_num:
+                adjacents += (self.get_value(new_row, new_col),)
+            else:
+                adjacents += (None,)
+        return adjacents
 
     @staticmethod
     def parse_instance():
@@ -107,6 +120,8 @@ class Board:
         board = [[None for x in range(10)] for y in range(12)]
         # Transform the 2D list into an np.array to easily acess the columns
         board = np.array(board)
+        # A dictionary with the avaliable boats of each type
+        avaliable_boats = {"4_piece": 1, "3_piece": 2, "2_piece": 3, "1_piece": 4}
         # Read everything until a EOF is reached
         while line := sys.stdin.readline().split():
             if line[0] == "ROW":
@@ -125,28 +140,25 @@ class Board:
                 row = int(line[1])
                 col = int(line[2])
                 hint = line[3]
-                # + 2 to count with the two hint-related lines
-                board[row + 2][col] = hint
+                Board.put_piece(board, row, col, hint)
+                # If the hint is a water piece it doesn't contribute to the piece count
                 if hint != 'W':
                     board[0][row] -= 1
                     board[1][col] -= 1
+                if hint == 'C':
+                    avaliable_boats["1_piece"] -= 1
                 # If the piece made a line count go to zero fill it with water
                 if board[0][row] == 0:
                     Board.fill_with_water(board[row + 2])
                 # If the piece made a column count go to zero fill it with water
                 if board[1][col] == 0:
-                    print(board[2:, col])
                     Board.fill_with_water(board[2:, col])
-                print(board)
-        return Board(board)
+        return Board(board, avaliable_boats)
 
     def print(self):
         for i in range(len(self.board_representation) - 2):
             for j in range(len(self.board_representation[0])):
-                if not self.get_value(i, j):
-                    print(".", end="")
-                else:
-                    print(f"{self.get_value(i, j)}", end="")
+                print(f"{self.get_value(i, j)}", end="")
             print("")
 
     def fill_with_water(row_col):
@@ -154,6 +166,33 @@ class Board:
         for i in range(len(row_col)):
             if not row_col[i]:
                 row_col[i] = '.'
+
+    def put_piece(board, row, col, piece_type):
+        row += 2
+        board[row][col] = piece_type
+        adjacents_coord = Board.neighbours(board, row, col, piece_type)
+        for new_row, new_col in adjacents_coord:
+            if not board[new_row][new_col]:
+                board[new_row][new_col] = '.'
+
+    def neighbours(board, row, col, piece_type) -> tuple:
+        """ Finds the avaliable neighbours positions
+        to put water based on the piece_type """
+        rows_num = len(board)
+        cols_num = len(board[0])
+        adjacens_coord = ()
+        print(piece_type)
+        if piece_type == 'C':
+            directions = ((-1, -1), (-1, 0), (-1, 1), (0, -1),
+                          (0, 1), (1, -1), (1, 0), (1, 1))
+            for direction in directions:
+                new_row = row + direction[0]
+                new_col = col + direction[1]
+                print(new_row, new_col)
+                if 0 <= new_row < rows_num and 0 <= new_col < cols_num:
+                    adjacens_coord += ((new_row, new_col),)
+        print(adjacens_coord)
+        return adjacens_coord
 
 
 class Bimaru(Problem):
@@ -165,23 +204,41 @@ class Bimaru(Problem):
         """Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""
         # TODO
-        return ["put_submarine", "put_2_boat_horizontal"]
+        pass
 
     def result(self, state: BimaruState, action):
         """Retorna o estado resultante de executar a 'action' sobre
         'state' passado como argumento. A ação a executar deve ser uma
         das presentes na lista obtida pela execução de
         self.actions(state)."""
-        if action == "put_submarine":
-            return state.put_submarine()
-        elif action == "put_2_boat_horizontal":
-            return state.put_2_piece_horizontal()
+        pass
 
     def goal_test(self, state: BimaruState):
         """Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se todas as posições do tabuleiro
         estão preenchidas de acordo com as regras do problema."""
         # TODO
+        line_sum = 0
+        column_sum = 0
+        # Line check
+        # - 2 to count for the + 2 after
+        for i in range(len(state.board.board_representation) - 2):
+            for j in range(len(state.board.board_representation[0])):
+                if state.board.board_representation[i + 2][j] not in (None, 'w', 'W'):
+                    line_sum += 1
+            if state.board.board_representation[0][i] != line_sum:
+                return False
+            line_sum = 0
+
+        # Column check
+        # - 2 to count for the + 2 after
+        for j in range(len(state.board.board_representation) - 2):
+            for i in range(len(state.board.board_representation[0])):
+                if state.board.board_representation[i + 2][j] not in (None, 'w', 'W'):
+                    column_sum += 1
+            if state.board.board_representation[1][j] != column_sum:
+                return False
+            column_sum = 0
         pass
 
     def h(self, node: Node):
@@ -195,7 +252,8 @@ class Bimaru(Problem):
 if __name__ == "__main__":
 
     board = Board.parse_instance()
-    # TODO:
+    print(board.board_representation)
+    # TODO
     # Ler o ficheiro do standard input,
     # Usar uma técnica de procura para resolver a instância,
     # Retirar a solução a partir do nó resultante,

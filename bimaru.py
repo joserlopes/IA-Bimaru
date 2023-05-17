@@ -16,6 +16,7 @@ from search import (
     greedy_search,
     recursive_best_first_search,
 )
+import numpy as np
 
 
 class BimaruState:
@@ -29,21 +30,6 @@ class BimaruState:
     def __lt__(self, other):
         return self.id < other.id
 
-    def put_submarine(self):
-        board = self.board
-        for i in range(10): 
-            for j in range(10):
-                if not board.get_value(i, j):
-                    # + 2 to count with the two hint-related lines
-                    row, col = i, j
-                    break
-        # horizontal_neighbours = board.adjacent_horizontal_values(board, row, col)
-        # vertical_neighbours = board.adjacent_vertical_values(board, row, col)
-        # diagonal_neighbours = (board.adjacent_diagonal_values_ascending(board, row, col), 
-        #                        board.adjacent_diagonal_values_descending(board, row, col))
-        board.put_piece(row, col, 'c')
-        return BimaruState(board)
-        
     # TODO: outros metodos da classe
 
 
@@ -97,7 +83,7 @@ class Board:
     def adjacent_diagonal_values_descending(self, row: int, col: int) -> (str, str):
         if 0 < row < 9 and 0 < col < 9:
             return (self.get_value(row - 1, col - 1), self.get_value(row + 1, col + 1))
-        # Only has the right diagonal 
+        # Only has the right diagonal
         elif (col == 0 and row != 0) or (row == 0 and col != 9):
             return (None, self.get_value(row + 1, col + 1))
         # Only has the left diagonal
@@ -119,20 +105,39 @@ class Board:
         """
         # The first "line" of the board will be related to the line and the second to the columns
         board = [[None for x in range(10)] for y in range(12)]
+        # Transform the 2D list into an np.array to easily acess the columns
+        board = np.array(board)
         # Read everything until a EOF is reached
         while line := sys.stdin.readline().split():
             if line[0] == "ROW":
                 for row_hint, index in zip(line[1:], range(10)):
                     board[0][index] = int(row_hint)
+                    if int(row_hint) == 0:
+                        # index + 2 because that's where the actual board starts
+                        Board.fill_with_water(board[index + 2])
             elif line[0] == "COLUMN":
                 for col_hint, index in zip(line[1:], range(10)):
                     board[1][index] = int(col_hint)
+                    if int(col_hint) == 0:
+                        # 2: to count with the first two lines
+                        Board.fill_with_water(board[2:, index])
             elif line[0] == "HINT":
                 row = int(line[1])
                 col = int(line[2])
                 hint = line[3]
                 # + 2 to count with the two hint-related lines
                 board[row + 2][col] = hint
+                if hint != 'W':
+                    board[0][row] -= 1
+                    board[1][col] -= 1
+                # If the piece made a line count go to zero fill it with water
+                if board[0][row] == 0:
+                    Board.fill_with_water(board[row + 2])
+                # If the piece made a column count go to zero fill it with water
+                if board[1][col] == 0:
+                    print(board[2:, col])
+                    Board.fill_with_water(board[2:, col])
+                print(board)
         return Board(board)
 
     def print(self):
@@ -144,8 +149,11 @@ class Board:
                     print(f"{self.get_value(i, j)}", end="")
             print("")
 
-    def put_piece(self, row, col, piece_type):
-        self.board_representation[row + 2][col] = piece_type
+    def fill_with_water(row_col):
+        """ Fills a given row or column with water on avaliable spots."""
+        for i in range(len(row_col)):
+            if not row_col[i]:
+                row_col[i] = '.'
 
 
 class Bimaru(Problem):
@@ -157,7 +165,7 @@ class Bimaru(Problem):
         """Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""
         # TODO
-        return ["put_submarine"]
+        return ["put_submarine", "put_2_boat_horizontal"]
 
     def result(self, state: BimaruState, action):
         """Retorna o estado resultante de executar a 'action' sobre
@@ -166,37 +174,15 @@ class Bimaru(Problem):
         self.actions(state)."""
         if action == "put_submarine":
             return state.put_submarine()
+        elif action == "put_2_boat_horizontal":
+            return state.put_2_piece_horizontal()
 
     def goal_test(self, state: BimaruState):
         """Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se todas as posições do tabuleiro
         estão preenchidas de acordo com as regras do problema."""
-        # line_sum = 0
-        # column_sum = 0
-        # # Line check
-        # # - 2 to count for the + 2 after
-        # for i in range(len(state.board.board_representation) - 2):
-        #     for j in range(len(state.board.board_representation[0])):
-        #         if state.board.board_representation[i + 2][j] not in (None, 'w', 'W'):
-        #             line_sum += 1
-        #     if state.board.board_representation[0][i] != line_sum:
-        #         return False
-        #     line_sum = 0
-
-        # # Column check
-        # # - 2 to count for the + 2 after
-        # for j in range(len(state.board.board_representation) - 2):
-        #     for i in range(len(state.board.board_representation[0])):
-        #         if state.board.board_representation[i + 2][j] not in (None, 'w', 'W'):
-        #             column_sum += 1
-        #     if state.board.board_representation[1][j] != column_sum:
-        #         return False
-        #     column_sum = 0
-        for i in range(10):
-            for j in range(10):
-                if state.board.get_value(i, j) not in ('C', 'c'):
-                    return False
-        return True
+        # TODO
+        pass
 
     def h(self, node: Node):
         """Função heuristica utilizada para a procura A*."""
@@ -209,16 +195,8 @@ class Bimaru(Problem):
 if __name__ == "__main__":
 
     board = Board.parse_instance()
-
-    problem = Bimaru(board)
-
-    solution_node = breadth_first_tree_search(problem)
-
-    solution_node.state.board.print()
-
     # TODO:
     # Ler o ficheiro do standard input,
     # Usar uma técnica de procura para resolver a instância,
     # Retirar a solução a partir do nó resultante,
     # Imprimir para o standard output no formato indicado.
-    pass

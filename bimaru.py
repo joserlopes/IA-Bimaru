@@ -32,7 +32,9 @@ class BimaruState:
         return self.id < other.id
 
     def put_1_piece(self):
-        pass
+        board = self.board
+        row, col = board.first_avaliable_spot()
+        board.put_piece(row, col, 'c')
 
     # TODO: outros metodos da classe
 
@@ -116,43 +118,31 @@ class Board:
             > from sys import stdin
             > line = stdin.readline().split()
         """
-        # The first "line" of the board will be related to the line and the second to the columns
+        # The first row of the board will be related to the line and the second to the columns
         board = [[None for x in range(10)] for y in range(12)]
         # Transform the 2D list into an np.array to easily acess the columns
         board = np.array(board)
         # A dictionary with the avaliable boats of each type
         avaliable_boats = {"4_piece": 1, "3_piece": 2, "2_piece": 3, "1_piece": 4}
-        # Read everything until a EOF is reached
+        # Read everything until EOF is reached
         while line := sys.stdin.readline().split():
             if line[0] == "ROW":
                 for row_hint, index in zip(line[1:], range(10)):
                     board[0][index] = int(row_hint)
-                    if int(row_hint) == 0:
-                        # index + 2 because that's where the actual board starts
-                        Board.fill_with_water(board[index + 2])
             elif line[0] == "COLUMN":
                 for col_hint, index in zip(line[1:], range(10)):
                     board[1][index] = int(col_hint)
-                    if int(col_hint) == 0:
-                        # 2: to count with the first two lines
-                        Board.fill_with_water(board[2:, index])
             elif line[0] == "HINT":
                 row = int(line[1])
                 col = int(line[2])
                 hint = line[3]
-                Board.put_piece(board, row, col, hint)
-                # If the hint is a water piece it doesn't contribute to the piece count
+                board[row + 2][col] = hint
+                # "Occupy" the spot
                 if hint != 'W':
                     board[0][row] -= 1
                     board[1][col] -= 1
                 if hint == 'C':
                     avaliable_boats["1_piece"] -= 1
-                # If the piece made a line count go to zero fill it with water
-                if board[0][row] == 0:
-                    Board.fill_with_water(board[row + 2])
-                # If the piece made a column count go to zero fill it with water
-                if board[1][col] == 0:
-                    Board.fill_with_water(board[2:, col])
         return Board(board, avaliable_boats)
 
     def print(self):
@@ -161,38 +151,72 @@ class Board:
                 print(f"{self.get_value(i, j)}", end="")
             print("")
 
-    def fill_with_water(row_col):
+    def fill_with_water(self, row_col):
         """ Fills a given row or column with water on avaliable spots."""
         for i in range(len(row_col)):
             if not row_col[i]:
                 row_col[i] = '.'
 
-    def put_piece(board, row, col, piece_type):
-        row += 2
-        board[row][col] = piece_type
-        adjacents_coord = Board.neighbours(board, row, col, piece_type)
+    def put_piece(self, row, col, piece_type):
+        board = self.board_representation
+        board[row + 2][col] = piece_type
+        adjacents_coord = self.neighbours(row, col, piece_type)
         for new_row, new_col in adjacents_coord:
+            if piece_type == 'c':
+                print(new_row, new_col)
             if not board[new_row][new_col]:
                 board[new_row][new_col] = '.'
 
-    def neighbours(board, row, col, piece_type) -> tuple:
-        """ Finds the avaliable neighbours positions
-        to put water based on the piece_type """
+    def neighbours(self, row, col, piece_type) -> tuple:
+        """ Finds the avaliable neighbours positions """
+        board = self.board_representation
+        row += 2
         rows_num = len(board)
         cols_num = len(board[0])
         adjacens_coord = ()
-        print(piece_type)
-        if piece_type == 'C':
-            directions = ((-1, -1), (-1, 0), (-1, 1), (0, -1),
-                          (0, 1), (1, -1), (1, 0), (1, 1))
-            for direction in directions:
-                new_row = row + direction[0]
-                new_col = col + direction[1]
-                print(new_row, new_col)
-                if 0 <= new_row < rows_num and 0 <= new_col < cols_num:
-                    adjacens_coord += ((new_row, new_col),)
-        print(adjacens_coord)
+        directions = ((-1, -1), (-1, 0), (-1, 1), (0, -1),
+                      (0, 1), (1, -1), (1, 0), (1, 1))
+        for direction in directions:
+            new_row = row + direction[0]
+            new_col = col + direction[1]
+            if 2 <= new_row < rows_num and 0 <= new_col < cols_num:
+                adjacens_coord += ((new_row, new_col),)
         return adjacens_coord
+
+    def beggining_check(self):
+        """ Fills with water the initial rows, columns and neighbours """
+        # TODO POR AS ÁGUAS NOS VIZINHOS DE CADA PEÇA INICIAL
+        board = self.board_representation
+        rows_num = len(board) - 2
+        cols_num = len(board[0])
+
+        for row in range(rows_num):
+            if board[0][row] == 0:
+                self.fill_with_water(board[row + 2])
+
+        for col in range(cols_num):
+            if board[1][col] == 0:
+                self.fill_with_water(board[2:, col])
+
+        for row in range(rows_num):
+            for col in range(cols_num):
+                piece_type = self.get_value(row, col)
+                if piece_type == 'C':
+                    adjacents_coord = self.neighbours(row, col, piece_type)
+                    for new_row, new_col in adjacents_coord:
+                        if not board[new_row][new_col]:
+                            board[new_row][new_col] = '.'
+
+    def first_avaliable_spot(self):
+        board = self.board_representation
+        rows_num = len(board) - 2
+        cols_num = len(board[0])
+
+        for row in range(rows_num):
+            for col in range(cols_num):
+                if not self.get_value(row, col):
+                    return (row, col)
+        return None
 
 
 class Bimaru(Problem):
@@ -224,7 +248,7 @@ class Bimaru(Problem):
         # - 2 to count for the + 2 after
         for i in range(len(state.board.board_representation) - 2):
             for j in range(len(state.board.board_representation[0])):
-                if state.board.board_representation[i + 2][j] not in (None, 'w', 'W'):
+                if state.board.board_representation[i + 2][j] not in ('.', 'W'):
                     line_sum += 1
             if state.board.board_representation[0][i] != line_sum:
                 return False
@@ -234,12 +258,13 @@ class Bimaru(Problem):
         # - 2 to count for the + 2 after
         for j in range(len(state.board.board_representation) - 2):
             for i in range(len(state.board.board_representation[0])):
-                if state.board.board_representation[i + 2][j] not in (None, 'w', 'W'):
+                if state.board.board_representation[i + 2][j] not in ('.', 'W'):
                     column_sum += 1
             if state.board.board_representation[1][j] != column_sum:
                 return False
             column_sum = 0
-        pass
+
+        return True
 
     def h(self, node: Node):
         """Função heuristica utilizada para a procura A*."""
@@ -252,7 +277,18 @@ class Bimaru(Problem):
 if __name__ == "__main__":
 
     board = Board.parse_instance()
+    board.beggining_check()
     print(board.board_representation)
+
+    problem = Bimaru(board)
+
+    initial_state = BimaruState(board)
+
+    initial_state.put_1_piece()
+    print(initial_state.board.board_representation)
+
+    initial_state.put_1_piece()
+    print(initial_state.board.board_representation)
     # TODO
     # Ler o ficheiro do standard input,
     # Usar uma técnica de procura para resolver a instância,

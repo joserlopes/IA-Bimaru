@@ -33,10 +33,10 @@ class BimaruState:
 
     def put_water_piece(self):
         board = self.board
-        if board.first_avaliable_spot('.'):
-            row, col = board.first_avaliable_spot('.')
+        first_avaliable_spot = board.first_avaliable_spot('.')
+        if first_avaliable_spot:
+            row, col = first_avaliable_spot[0], first_avaliable_spot[1]
             board.put_piece(row, col, '.')
-        print(board.board_representation)
         return BimaruState(board)
 
     def put_center_piece(self):
@@ -44,7 +44,6 @@ class BimaruState:
         if board.first_avaliable_spot('c'):
             row, col = board.first_avaliable_spot('c')
             board.put_piece(row, col, 'c')
-        print(board.board_representation)
         return BimaruState(board)
 
     def put_left_piece(self):
@@ -52,7 +51,6 @@ class BimaruState:
         if board.first_avaliable_spot('l'):
             row, col = board.first_avaliable_spot('l')
             board.put_piece(row, col, 'l')
-        print(board.board_representation)
         return BimaruState(board)
 
     def put_right_piece(self):
@@ -60,7 +58,6 @@ class BimaruState:
         if board.first_avaliable_spot('r'):
             row, col = board.first_avaliable_spot('r')
             board.put_piece(row, col, 'r')
-        print(board.board_representation)
         return BimaruState(board)
 
     def put_top_piece(self):
@@ -68,7 +65,6 @@ class BimaruState:
         if board.first_avaliable_spot('t'):
             row, col = board.first_avaliable_spot('t')
             board.put_piece(row, col, 't')
-        print(board.board_representation)
         return BimaruState(board)
 
     def put_bottom_piece(self):
@@ -76,15 +72,14 @@ class BimaruState:
         if board.first_avaliable_spot('b'):
             row, col = board.first_avaliable_spot('b')
             board.put_piece(row, col, 'b')
-        print(board.board_representation)
         return BimaruState(board)
 
     def put_middle_piece(self):
         board = self.board
-        if board.first_avaliable_spot('m'):
-            row, col = board.first_avaliable_spot('m')
+        first_avaliable_spot = board.first_avaliable_spot('m')
+        if first_avaliable_spot:
+            row, col = first_avaliable_spot[0], first_avaliable_spot[1]
             board.put_piece(row, col, 'm')
-        print(board.board_representation)
         return BimaruState(board)
 
 
@@ -247,29 +242,12 @@ class Board:
         elif piece_type in ('b', 'B'):
             directions = (directions[0],) + directions[2:]
         elif piece_type in ('m', 'M'):
-            print(directions)
             directions = (directions[0],) + (directions[2],) \
                 + (directions[5],) + (directions[7],)
         elif piece_type in ('l', 'L'):
             directions = directions[:4] + directions[5:]
         elif piece_type in ('r', 'R'):
             directions = directions[:3] + directions[4:]
-
-        for direction in directions:
-            new_row = row + direction[0]
-            new_col = col + direction[1]
-            if 0 <= new_row < rows_num and 0 <= new_col < cols_num:
-                adjacens_coord += ((new_row, new_col),)
-        return adjacens_coord
-
-    def neighbours(self, row, col, piece_type) -> tuple:
-        """ Finds the avaliable neighbours positions tu put water in"""
-        board = self.board_representation
-        rows_num = len(board)
-        cols_num = len(board[0])
-        adjacens_coord = ()
-        directions = ((-1, -1), (-1, 0), (-1, 1), (0, -1),
-                      (0, 1), (1, -1), (1, 0), (1, 1))
 
         for direction in directions:
             new_row = row + direction[0]
@@ -312,58 +290,88 @@ class Board:
         for row in range(rows_num):
             for col in range(cols_num):
                 if not self.get_value(row, col):
-                    return (row, col)
+                    if self.is_valid_position(row, col, piece_type):
+                        return (row, col)
         return None
 
-#    def is_valid_position(self, adjacents_coord, piece_type):
-#        neighbour_values = []
-#
-#        # A list with the values of all neighbouring positions
-#        for new_row, new_col in adjacents_coord:
-#            neighbour_values.append(self.get_value(new_row, new_col))
-#
-#        if piece_type == 'c':
-#            if all(element is None or element == '.'
-#                   for element in neighbour_values):
-#                return True
-#        elif piece_type == 'l':
-#            if all(element is None or element == '.'
-#                   for element in neighbour_values[:4]) \
-#                       and all(element is None or element == '.'
-#                               for element in neighbour_values[5:]) \
-#                       and neighbour_values[4] in (None, 'M', 'm', 'r', 'R'):
-#                return True
-#        elif piece_type == 'r':
-#            if all(element is None or element == '.'
-#                   for element in neighbour_values[:3]) \
-#                       and all(element is None or element == '.'
-#                               for element in neighbour_values[4:]) \
-#                       and neighbour_values[3] in (None, 'M', 'm', 'l', 'L'):
-#                return True
-#        elif piece_type == 't':
-#            if neighbour_values.all(None or '.') \
-#                       and neighbour_values[7] in (None, '.') \
-#                       and neighbour_values[6] in (None, 'M', 'm', 'b', 'B'):
-#                return True
-#        elif piece_type == 'b':
-#            if all(element is None or element == '.'
-#                   for element in neighbour_values[2:]) \
-#                       and neighbour_values[0] in (None, '.') \
-#                       and neighbour_values[1] in (None, 'M', 'm', 't', 'T'):
-#                return True
-#        elif piece_type == 'm':
-#            if neighbour_values[0] in (None, '.') \
-#                and neighbour_values[2] in (None, '.') \
-#                and neighbour_values[5] in (None, '.') \
-#                and neighbour_values[7] in (None, '.') \
-#                and neighbour_values[1] in (None, 't', 'T', 'm', 'M') \
-#                and neighbour_values[3] in (None, 'l', 'L', 'm', 'M') \
-#                and neighbour_values[4] in (None, 'r', 'R', 'm', 'M') \
-#                    and neighbour_values[6] in (None, 'b', 'B', 'm', 'M'):
-#                return True
-#        elif piece_type == '.':
-#            return True
-#        return False
+    def neighbours(self, row, col) -> tuple:
+        board = self.board_representation
+        rows_num = len(board)
+        cols_num = len(board[0])
+        adjacens_coord = ()
+        directions = ((-1, -1), (-1, 0), (-1, 1), (0, -1),
+                      (0, 1), (1, -1), (1, 0), (1, 1))
+
+        for direction in directions:
+            new_row = row + direction[0]
+            new_col = col + direction[1]
+            if 0 <= new_row < rows_num and 0 <= new_col < cols_num:
+                adjacens_coord += ((new_row, new_col),)
+            else:
+                adjacens_coord += ((None, None),)
+
+        return adjacens_coord
+
+    def is_valid_position(self, row, col, piece_type):
+        neighbour_values = []
+
+        adjacents_coord = self.neighbours(row, col)
+        # A list with the values of all neighbouring positions
+        print(row, col)
+        for new_row, new_col in adjacents_coord:
+            if new_row is not None and new_col is not None:
+                neighbour_values.append(self.get_value(new_row, new_col))
+            else:
+                neighbour_values.append('.')
+
+        if piece_type == 'c':
+            if (element is None or element == '.'
+                   for element in neighbour_values):
+                return True
+        elif piece_type == 'l':
+            if (element is None or element == '.'
+                   for element in neighbour_values[:4]) \
+                       and (element is None or element == '.'
+                               for element in neighbour_values[5:]) \
+                       and neighbour_values[4] in (None, 'M', 'm', 'r', 'R'):
+                return True
+        elif piece_type == 'r':
+            if (element is None or element == '.'
+                   for element in neighbour_values[:3]) \
+                       and (element is None or element == '.'
+                               for element in neighbour_values[4:]) \
+                       and neighbour_values[3] in (None, 'M', 'm', 'l', 'L'):
+                return True
+        elif piece_type == 't':
+            if row == 9:
+                return False
+            elif (element is None or element == '.'
+                  for element in neighbour_values[:6]) \
+                and neighbour_values[7] in (None, '.') \
+                    and neighbour_values[6] in (None, 'M', 'm', 'b', 'B'):
+                return True
+        elif piece_type == 'b':
+            if row == 0:
+                return False
+            elif (element is None or element == '.'
+                    for element in neighbour_values[2:]) \
+                       and neighbour_values[0] in (None, '.') \
+                       and neighbour_values[1] in (None, 'M', 'm', 't', 'T'):
+                return True
+        elif piece_type == 'm':
+            if neighbour_values[0] in (None, '.') \
+                and neighbour_values[2] in (None, '.') \
+                and neighbour_values[5] in (None, '.') \
+                and neighbour_values[7] in (None, '.') \
+                and neighbour_values[1] in (None, 't', 'T', 'm', 'M') \
+                and neighbour_values[3] in (None, 'l', 'L', 'm', 'M') \
+                and neighbour_values[4] in (None, 'r', 'R', 'm', 'M') \
+                    and neighbour_values[6] in (None, 'b', 'B', 'm', 'M'):
+                return True
+        elif piece_type == '.':
+            return True
+
+        return False
 
 
 class Bimaru(Problem):
@@ -449,16 +457,14 @@ if __name__ == "__main__":
     print(board.board_occupied)
     print(board.board_representation)
 
-# Criar uma instância de Bimaru:
     problem = Bimaru(board)
-# Obter o nó solução usando a procura em profundidade:
-    goal_node = breadth_first_tree_search(problem)
-# Verificar se foi atingida a solução
-    print("Is goal?", problem.goal_test(goal_node.state))
-    print("Solution:\n", goal_node.state.board.print(), sep="")
+
+    initial_state = BimaruState(board)
+    result_state1 = problem.result(initial_state, "put_middle_piece")
+
+    print(result_state1.board.board_representation)
     # TODO
     # Ler o ficheiro do standard input,
     # Usar uma técnica de procura para resolver a instância,
     # Retirar a solução a partir do nó resultante,
     # Imprimir para o standard output no formato indicado.
-

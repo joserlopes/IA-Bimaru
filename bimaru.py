@@ -37,41 +37,52 @@ class BimaruState:
         if first_avaliable_spot:
             row, col = first_avaliable_spot[0], first_avaliable_spot[1]
             board.put_piece(row, col, '.')
+        print(self.board.board_representation)
         return BimaruState(board)
 
     def put_center_piece(self):
         board = self.board
-        if board.first_avaliable_spot('c'):
-            row, col = board.first_avaliable_spot('c')
+        first_avaliable_spot = board.first_avaliable_spot('c')
+        if first_avaliable_spot:
+            row, col = first_avaliable_spot[0], first_avaliable_spot[1]
             board.put_piece(row, col, 'c')
+        print(self.board.board_representation)
         return BimaruState(board)
 
     def put_left_piece(self):
         board = self.board
-        if board.first_avaliable_spot('l'):
-            row, col = board.first_avaliable_spot('l')
+        first_avaliable_spot = board.first_avaliable_spot('l')
+        if first_avaliable_spot:
+            row, col = first_avaliable_spot[0], first_avaliable_spot[1]
             board.put_piece(row, col, 'l')
+        print(self.board.board_representation)
         return BimaruState(board)
 
     def put_right_piece(self):
         board = self.board
-        if board.first_avaliable_spot('r'):
-            row, col = board.first_avaliable_spot('r')
+        first_avaliable_spot = board.first_avaliable_spot('r')
+        if first_avaliable_spot:
+            row, col = first_avaliable_spot[0], first_avaliable_spot[1]
             board.put_piece(row, col, 'r')
+        print(self.board.board_representation)
         return BimaruState(board)
 
     def put_top_piece(self):
         board = self.board
-        if board.first_avaliable_spot('t'):
-            row, col = board.first_avaliable_spot('t')
+        first_avaliable_spot = board.first_avaliable_spot('t')
+        if first_avaliable_spot:
+            row, col = first_avaliable_spot[0], first_avaliable_spot[1]
             board.put_piece(row, col, 't')
+        print(self.board.board_representation)
         return BimaruState(board)
 
     def put_bottom_piece(self):
         board = self.board
-        if board.first_avaliable_spot('b'):
-            row, col = board.first_avaliable_spot('b')
+        first_avaliable_spot = board.first_avaliable_spot('b')
+        if first_avaliable_spot:
+            row, col = first_avaliable_spot[0], first_avaliable_spot[1]
             board.put_piece(row, col, 'b')
+        print(self.board.board_representation)
         return BimaruState(board)
 
     def put_middle_piece(self):
@@ -80,6 +91,7 @@ class BimaruState:
         if first_avaliable_spot:
             row, col = first_avaliable_spot[0], first_avaliable_spot[1]
             board.put_piece(row, col, 'm')
+        print(self.board.board_representation)
         return BimaruState(board)
 
 
@@ -215,7 +227,7 @@ class Board:
 
         if piece_type not in ('.', 'W'):
             board_occupied[0][row] += 1
-            board_occupied[0][col] += 1
+            board_occupied[1][col] += 1
 
             if board_occupied[0][row] == board_info[0][row]:
                 self.fill_with_water(board[row])
@@ -258,7 +270,6 @@ class Board:
 
     def beggining_check(self):
         """ Fills with water the initial rows, columns and neighbours """
-        # TODO POR AS ÁGUAS NOS VIZINHOS DE CADA PEÇA INICIAL
         board = self.board_representation
         board_info = self.board_info
         board_occupied = self.board_occupied
@@ -298,7 +309,7 @@ class Board:
         board = self.board_representation
         rows_num = len(board)
         cols_num = len(board[0])
-        adjacens_coord = ()
+        adjacents_coord = ()
         directions = ((-1, -1), (-1, 0), (-1, 1), (0, -1),
                       (0, 1), (1, -1), (1, 0), (1, 1))
 
@@ -306,18 +317,19 @@ class Board:
             new_row = row + direction[0]
             new_col = col + direction[1]
             if 0 <= new_row < rows_num and 0 <= new_col < cols_num:
-                adjacens_coord += ((new_row, new_col),)
+                adjacents_coord += ((new_row, new_col),)
             else:
-                adjacens_coord += ((None, None),)
+                adjacents_coord += ((None, None),)
 
-        return adjacens_coord
+        return adjacents_coord
 
     def is_valid_position(self, row, col, piece_type):
+        """ Check to see if an empty position is valid for a given
+            piece_type """
         neighbour_values = []
 
         adjacents_coord = self.neighbours(row, col)
         # A list with the values of all neighbouring positions
-        print(row, col)
         for new_row, new_col in adjacents_coord:
             if new_row is not None and new_col is not None:
                 neighbour_values.append(self.get_value(new_row, new_col))
@@ -325,48 +337,53 @@ class Board:
                 neighbour_values.append('.')
 
         if piece_type == 'c':
-            if (element is None or element == '.'
+            if all(element is None or element == '.' or element == 'W'
                    for element in neighbour_values):
                 return True
         elif piece_type == 'l':
-            if (element is None or element == '.'
+            if col == 9:
+                return False
+            if all(element is None or element == '.' or element == 'W'
                    for element in neighbour_values[:4]) \
-                       and (element is None or element == '.'
+                       and all(element is None or element == '.' or element == 'W'
                                for element in neighbour_values[5:]) \
                        and neighbour_values[4] in (None, 'M', 'm', 'r', 'R'):
                 return True
         elif piece_type == 'r':
-            if (element is None or element == '.'
+            if col == 0:
+                return False
+            if all(element is None or element == '.' or element == 'W'
                    for element in neighbour_values[:3]) \
-                       and (element is None or element == '.'
+                       and all(element is None or element == '.' or element == 'W'
                                for element in neighbour_values[4:]) \
                        and neighbour_values[3] in (None, 'M', 'm', 'l', 'L'):
                 return True
         elif piece_type == 't':
+            print(neighbour_values)
             if row == 9:
                 return False
-            elif (element is None or element == '.'
-                  for element in neighbour_values[:6]) \
-                and neighbour_values[7] in (None, '.') \
+            elif all(element is None or element == '.' or element == 'W'
+                     for element in neighbour_values[:6]) \
+                and neighbour_values[7] in (None, '.', 'W') \
                     and neighbour_values[6] in (None, 'M', 'm', 'b', 'B'):
                 return True
         elif piece_type == 'b':
             if row == 0:
                 return False
-            elif (element is None or element == '.'
-                    for element in neighbour_values[2:]) \
-                       and neighbour_values[0] in (None, '.') \
-                       and neighbour_values[1] in (None, 'M', 'm', 't', 'T'):
+            elif all(element is None or element == '.' or element == 'W'
+                     for element in neighbour_values[2:]) \
+                             and neighbour_values[0] in (None, '.', 'W') \
+                             and neighbour_values[1] in (None, 'M', 'm', 't', 'T'):
                 return True
         elif piece_type == 'm':
-            if neighbour_values[0] in (None, '.') \
-                and neighbour_values[2] in (None, '.') \
-                and neighbour_values[5] in (None, '.') \
-                and neighbour_values[7] in (None, '.') \
-                and neighbour_values[1] in (None, 't', 'T', 'm', 'M') \
-                and neighbour_values[3] in (None, 'l', 'L', 'm', 'M') \
-                and neighbour_values[4] in (None, 'r', 'R', 'm', 'M') \
-                    and neighbour_values[6] in (None, 'b', 'B', 'm', 'M'):
+            if neighbour_values[0] in (None, '.', 'W') \
+                    and neighbour_values[2] in (None, '.', 'W') \
+                    and neighbour_values[5] in (None, '.', 'W') \
+                    and neighbour_values[7] in (None, '.', 'W') \
+                    and neighbour_values[1] in (None, '.', 'W', 't', 'T', 'm', 'M') \
+                    and neighbour_values[3] in (None, '.', 'W', 'l', 'L', 'm', 'M') \
+                    and neighbour_values[4] in (None, '.', 'W', 'r', 'R', 'm', 'M') \
+                    and neighbour_values[6] in (None, '.', 'W', 'b', 'B', 'm', 'M'):
                 return True
         elif piece_type == '.':
             return True
@@ -422,9 +439,16 @@ class Bimaru(Problem):
     def h(self, node: Node):
         """Função heuristica utilizada para a procura A*."""
         # TODO
-        pass
+        # ver a cena de ser o número de barcos que ainda falta por
+        missing_pieces = 0
+        rows_num = len(node.state.board.board_representation)
+        board_info = node.state.board.board_info
+        board_occupied = node.state.board.board_occupied
+        for row in range(rows_num):
+            missing_pieces += board_info[0][row] - board_occupied[0][row]
+            missing_pieces += board_info[1][row] - board_occupied[1][row]
 
-    # TODO: outros metodos da classe
+        return missing_pieces
 
 
 if __name__ == "__main__":
@@ -459,10 +483,39 @@ if __name__ == "__main__":
 
     problem = Bimaru(board)
 
-    initial_state = BimaruState(board)
-    result_state1 = problem.result(initial_state, "put_middle_piece")
+    goal_node = astar_search(problem, problem.h)
 
-    print(result_state1.board.board_representation)
+    print("Is goal?", problem.goal_test(goal_node.state))
+    print("Solution:\n", goal_node.state.board.print(), sep="")
+#    s0 = BimaruState(board)
+
+#    s1 = problem.result(s0, "put_water_piece")
+#    s2 = problem.result(s1, "put_top_piece")
+#    s3 = problem.result(s2, "put_bottom_piece")
+#    s4 = problem.result(s3, "put_water_piece")
+#    s5 = problem.result(s4, "put_water_piece")
+#    s6 = problem.result(s5, "put_top_piece")
+#    s7 = problem.result(s6, "put_water_piece")
+#    s8 = problem.result(s7, "put_bottom_piece")
+#    s9 = problem.result(s8, "put_middle_piece")
+#    s10 = problem.result(s9, "put_water_piece")
+#    s11 = problem.result(s10, "put_water_piece")
+#    s12 = problem.result(s11, "put_middle_piece")
+#    s13 = problem.result(s12, "put_center_piece")
+#    s14 = problem.result(s13, "put_water_piece")
+#    s15 = problem.result(s14, "put_center_piece")
+#    s16 = problem.result(s15, "put_bottom_piece")
+#    s17 = problem.result(s16, "put_top_piece")
+#    s18 = problem.result(s17, "put_top_piece")
+#    s19 = problem.result(s18, "put_bottom_piece")
+#    s20 = problem.result(s19, "put_top_piece")
+#    s21 = problem.result(s20, "put_middle_piece")
+#    s22 = problem.result(s21, "put_bottom_piece")
+
+#    print(s14.board.board_representation)
+
+#    print("Is goal?", problem.goal_test(s5))
+#    print("Is goal?", problem.goal_test(s22))
     # TODO
     # Ler o ficheiro do standard input,
     # Usar uma técnica de procura para resolver a instância,

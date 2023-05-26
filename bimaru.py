@@ -148,8 +148,19 @@ class Board:
         elif piece_type in ('b', 'B'):
             directions = (directions[0],) + directions[2:]
         elif piece_type in ('m', 'M'):
-            directions = (directions[0],) + (directions[2],) \
-                + (directions[5],) + (directions[7],)
+            vertical_neighbors = self.adjacent_vertical_values(row, col)
+            horizontal_neighbors = self.adjacent_horizontal_values(row, col)
+            if '.' in vertical_neighbors or 'W' in vertical_neighbors:
+                directions = (directions[0],) + (directions[1],) \
+                    + (directions[2],) + (directions[5],) \
+                    + (directions[6],) + (directions[7],)
+            elif '.' in horizontal_neighbors or 'W' in horizontal_neighbors:
+                directions = (directions[0],) + (directions[2],) \
+                    + (directions[3],) + (directions[4],) \
+                    + (directions[5],) + (directions[7],)
+            else:
+                directions = (directions[0],) + (directions[2],) \
+                    + (directions[5],) + (directions[7],)
         elif piece_type in ('l', 'L'):
             directions = directions[:4] + directions[5:]
         elif piece_type in ('r', 'R'):
@@ -160,6 +171,7 @@ class Board:
             new_col = col + direction[1]
             if 0 <= new_row < rows_num and 0 <= new_col < cols_num:
                 adjacents_coord += ((new_row, new_col),)
+
         return adjacents_coord
 
     def beggining_check(self):
@@ -210,6 +222,139 @@ class Board:
 
         return Board(board, board_info, board_occupied)
 
+    def possible_4boat_horizontal_positions(self):
+        # TODO FALTA FAZER A PARTE DA DIFERENÇA EM VEZ DE SER SÓ >= 0
+        """This position refers to the top piece of the boat"""
+        board = self.board_representation
+        board_info = self.board_info
+        board_occupied = self.board_occupied
+        possible_positions = []
+        rows_len = cols_len = len(board)
+
+        for i in range(rows_len):
+            if board_info[0][i] >= 4:
+                # -3 because we want to count with the length of the boat
+                for j in range(cols_len - 3):
+                    if board_info[1][j] - board_occupied[1][j] >= 1 and board_info[1][j + 1] - board_occupied[1][j + 1] >= 1 \
+                        and board_info[1][j + 2] - board_occupied[1][j + 2] >= 1 and board_info[1][j + 3] - board_occupied[1][j + 3] >= 1 \
+                        and board[i][j] in ('L', None) and board[i][j + 1] in ('M', None) \
+                            and board[i][j + 2] in ('M', None) and board[i][j + 3] in ('R', None):
+                        possible_positions.append((i, j))
+
+        return possible_positions
+
+    def possible_4boat_vertical_positions(self):
+        # TODO FALTA FAZER A PARTE DA DIFERENÇA EM VEZ DE SER SÓ >= 0
+        """This position refers to the top piece of the boat"""
+        board = self.board_representation
+        board_info = self.board_info
+        board_occupied = self.board_occupied
+        possible_positions = []
+        rows_len = cols_len = len(board)
+
+        for i in range(cols_len):
+            if board_info[1][i] >= 4:
+                # -3 because we want to count with the length of the boat
+                for j in range(rows_len - 3):
+                    if board_info[0][j] - board_occupied[0][j] >= 1 and board_info[0][j + 1] - board_occupied[0][j + 1] >= 1 \
+                            and board_info[0][j + 2] - board_occupied[0][j + 2] >= 1 and board_info[0][j + 3] - board_occupied[0][j + 3] >= 1 \
+                            and board[j][i] in ('T', None) and board[j + 1][i] in ('M', None) \
+                            and board[j + 2][i] in ('M', None) and board[j + 3][i] in ('T', None):
+                        possible_positions.append((j, i))
+
+        return possible_positions
+
+    def possible_3boat_horizontal_positions(self):
+        board = self.board_representation
+        board_info = self.board_info
+        board_occupied = self.board_occupied
+        possible_positions = []
+        rows_len = cols_len = len(board)
+
+        for i in range(rows_len):
+            if board_info[0][i] >= 3:
+                # -2 because we want to count with the length of the boat
+                for j in range(cols_len - 2):
+                    if board_info[1][j] - board_occupied[1][j] >= 1 and board_info[1][j + 1] - board_occupied[1][j + 1] >= 1 \
+                        and board_info[1][j + 2] - board_occupied[1][j + 2] >= 1 \
+                        and board[i][j] in ('L', None) and board[i][j + 1] in ('M', None) \
+                            and board[i][j + 2] in ('R', None):
+                        possible_positions.append((i, j))
+
+        return possible_positions
+
+    def possible_3boat_vertical_positions(self):
+        # TODO FALTA FAZER A PARTE DA DIFERENÇA EM VEZ DE SER SÓ >= 0
+        """This position refers to the top piece of the boat"""
+        board = self.board_representation
+        board_info = self.board_info
+        board_occupied = self.board_occupied
+        possible_positions = []
+        rows_len = cols_len = len(board)
+
+        for i in range(cols_len):
+            if board_info[1][i] >= 3:
+                # -2 because we want to count with the length of the boat
+                for j in range(rows_len - 2):
+                    if board_info[0][j] - board_occupied[0][j] >= 1 and board_info[0][j + 1] - board_occupied[0][j + 1] >= 1 \
+                            and board_info[0][j + 2] - board_occupied[0][j + 2] >= 1 \
+                            and board[j][i] in ('T', None) and board[j + 1][i] in ('M', None) \
+                            and board[j + 2][i] in ('B', None):
+                        possible_positions.append((j, i))
+
+        return possible_positions
+
+    def possible_2boat_horizontal_positions(self):
+        board = self.board_representation
+        board_info = self.board_info
+        board_occupied = self.board_occupied
+        possible_positions = []
+        rows_len = cols_len = len(board)
+
+        for i in range(rows_len):
+            if board_info[0][i] >= 2:
+                # -1 because we want to count with the length of the boat
+                for j in range(cols_len - 1):
+                    if board_info[1][j] - board_occupied[1][j] >= 1 and board_info[1][j + 1] - board_occupied[1][j + 1] >= 1 \
+                            and board[i][j] in ('L', None) and board[i][j + 1] in ('R', None):
+                        possible_positions.append((i, j))
+
+        return possible_positions
+
+    def possible_2boat_vertical_positions(self):
+        # TODO FALTA FAZER A PARTE DA DIFERENÇA EM VEZ DE SER SÓ >= 0
+        """This position refers to the top piece of the boat"""
+        board = self.board_representation
+        board_info = self.board_info
+        board_occupied = self.board_occupied
+        possible_positions = []
+        rows_len = cols_len = len(board)
+
+        for i in range(cols_len):
+            if board_info[1][i] >= 2:
+                # -1 because we want to count with the length of the boat
+                for j in range(rows_len - 1):
+                    if board_info[0][j] - board_occupied[0][j] >= 1 and board_info[0][j + 1] - board_occupied[0][j + 1] >= 1 \
+                            and board[j][i] in ('T', None) and board[j + 1][i] in ('B', None):
+                        possible_positions.append((j, i))
+
+        return possible_positions
+
+    def possible_1boat_positions(self):
+        board = self.board_representation
+        board_info = self.board_info
+        board_occupied = self.board_occupied
+        possible_positions = []
+        rows_len = cols_len = len(board)
+        for i in range(rows_len):
+            if board_info[0][i] >= 1:
+                for j in range(cols_len):
+                    if board_info[1][j] - board_occupied[1][j] >= 1 \
+                            and board[i][j] is None:
+                        possible_positions.append((i, j))
+
+        return possible_positions
+
 
 class Bimaru(Problem):
     def __init__(self, board: Board):
@@ -249,6 +394,13 @@ if __name__ == "__main__":
     print(board.board_occupied)
     print(board.board_representation)
     print(board.boat_info)
+    print(board.possible_4boat_horizontal_positions())
+    print(board.possible_4boat_vertical_positions())
+    print(board.possible_3boat_horizontal_positions())
+    print(board.possible_3boat_vertical_positions())
+    print(board.possible_2boat_horizontal_positions())
+    print(board.possible_2boat_vertical_positions())
+    print(board.possible_1boat_positions())
 
     # TODO
     # Ler o ficheiro do standard input,

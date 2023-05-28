@@ -31,6 +31,49 @@ class BimaruState:
     def __lt__(self, other):
         return self.id < other.id
 
+    def place_4boat_horizontally(self, row, col):
+        board = self.board
+        print(board.board_representation)
+        board.place_4boat_horizontally(row, col)
+        return BimaruState(board)
+
+    def place_4boat_vertically(self, row, col):
+        board = self.board
+        print(board.board_representation)
+        board.place_4boat_vertically(row, col)
+        print(row, col)
+        return BimaruState(board)
+
+    def place_3boat_horizontally(self, row, col):
+        board = self.board
+        print(board.board_representation)
+        board.place_3boat_horizontally(row, col)
+        return BimaruState(board)
+
+    def place_3boat_vertically(self, row, col):
+        board = self.board
+        print(board.board_representation)
+        board.place_3boat_vertically(row, col)
+        return BimaruState(board)
+
+    def place_2boat_horizontally(self, row, col):
+        board = self.board
+        print(board.board_representation)
+        board.place_2boat_horizontally(row, col)
+        return BimaruState(board)
+
+    def place_2boat_vertically(self, row, col):
+        board = self.board
+        print(board.board_representation)
+        board.place_2boat_vertically(row, col)
+        return BimaruState(board)
+
+    def place_1boat(self, row, col):
+        board = self.board
+        print(board.board_representation)
+        board.place_1boat(row, col)
+        return BimaruState(board)
+
 
 class Board:
     """Representação interna de um tabuleiro de Bimaru."""
@@ -98,7 +141,7 @@ class Board:
         # deep copy of the list
         board_occupied = np.array(board_occupied)
 
-        boat_info = {"4_piece": 1, "3_piece": 2, "2_piece": 3, "1_piece": 4}
+        boat_info = {"4piece": 1, "3piece": 2, "2piece": 3, "1piece": 4}
 
         # Read everything until EOF is reached
         while line := sys.stdin.readline().split():
@@ -118,7 +161,7 @@ class Board:
                     board_occupied[0][row] += 1
                     board_occupied[1][col] += 1
                 if hint == 'C':
-                    boat_info["1_piece"] -= 1
+                    boat_info["1piece"] -= 1
 
         return Board(board, board_info, board_occupied, boat_info)
 
@@ -200,8 +243,8 @@ class Board:
                             board[new_row][new_col] = '.'
 
     def put_piece(self, row, col, piece_type):
-        board = self.board_representation.copy()
-        board_occupied = self.board_occupied.copy()
+        board = self.board_representation
+        board_occupied = self.board_occupied
         board_info = self.board_info
         board[row][col] = piece_type
 
@@ -219,8 +262,6 @@ class Board:
             for new_row, new_col in adjacents_coord:
                 if not board[new_row][new_col]:
                     board[new_row][new_col] = '.'
-
-        return Board(board, board_info, board_occupied)
 
     def possible_4boat_horizontal_positions(self):
         # TODO FALTA FAZER A PARTE DA DIFERENÇA EM VEZ DE SER SÓ >= 0
@@ -355,6 +396,91 @@ class Board:
 
         return possible_positions
 
+    def place_4boat_horizontally(self, row, col):
+        boat_info = self.boat_info
+        for i in range(4):
+            if self.get_value(row, col + i) is None:
+                if i == 0:
+                    self.put_piece(row, col + i, 'l')
+                elif i == 1:
+                    self.put_piece(row, col + i, 'm')
+                elif i == 2:
+                    self.put_piece(row, col + i, 'm')
+                elif i == 3:
+                    self.put_piece(row, col + i, 'r')
+
+        boat_info["4piece"] -= 1
+
+    def place_4boat_vertically(self, row, col):
+        boat_info = self.boat_info
+        for i in range(4):
+            if self.get_value(row + i, col) is None:
+                if i == 0:
+                    self.put_piece(row, col, 't')
+                elif i == 1:
+                    self.put_piece(row + i, col, 'm')
+                elif i == 2:
+                    self.put_piece(row + i, col, 'm')
+                elif i == 3:
+                    self.put_piece(row + i, col, 'b')
+
+        boat_info["4piece"] -= 1
+
+    def place_3boat_horizontally(self, row, col):
+        boat_info = self.boat_info
+        for i in range(3):
+            if self.get_value(row, col + i) is None:
+                if i == 0:
+                    self.put_piece(row, col + i, 'l')
+                elif i == 1:
+                    self.put_piece(row, col + i, 'm')
+                elif i == 2:
+                    self.put_piece(row, col + i, 'r')
+
+        boat_info["3piece"] -= 1
+
+    def place_3boat_vertically(self, row, col):
+        boat_info = self.boat_info
+        for i in range(3):
+            if self.get_value(row + i, col) is None:
+                if i == 0:
+                    self.put_piece(row, col, 't')
+                elif i == 1:
+                    self.put_piece(row + i, col, 'm')
+                elif i == 2:
+                    self.put_piece(row + i, col, 'b')
+
+        boat_info["3piece"] -= 1
+
+    def place_2boat_horizontally(self, row, col):
+        boat_info = self.boat_info
+        for i in range(2):
+            if self.get_value(row, col + i) is None:
+                if i == 0:
+                    self.put_piece(row, col + i, 'l')
+                elif i == 1:
+                    self.put_piece(row, col + i, 'r')
+
+        boat_info["2piece"] -= 1
+
+    def place_2boat_vertically(self, row, col):
+        boat_info = self.boat_info
+        for i in range(2):
+            if self.get_value(row + i, col) is None:
+                if i == 0:
+                    self.put_piece(row, col, 't')
+                elif i == 1:
+                    self.put_piece(row + i, col, 'b')
+
+        boat_info["2piece"] -= 1
+
+    def place_1boat(self, row, col):
+        boat_info = self.boat_info
+        if self.get_value(row, col) is None:
+            self.put_piece(row, col, 'c')
+
+        boat_info["1piece"] -= 1
+
 
 class Bimaru(Problem):
     def __init__(self, board: Board):
@@ -364,21 +490,73 @@ class Bimaru(Problem):
     def actions(self, state: BimaruState):
         """Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""
-        if state.board.boat_info["4_piece"] == 1:
-            pass
+        board = state.board
+        possible_actions = []
+        if state.board.boat_info["4piece"] == 1:
+            avaliable_spots_horizontal = board.possible_4boat_horizontal_positions()
+            avaliable_spots_vertical = board.possible_4boat_vertical_positions()
+            print(avaliable_spots_horizontal, avaliable_spots_vertical)
+            for avaliable_spot in avaliable_spots_horizontal:
+                possible_actions.append(["4boat_horizontal", avaliable_spot])
+            for avaliable_spot in avaliable_spots_vertical:
+                possible_actions.append(["4boat_vertical", avaliable_spot])
+        elif state.board.boat_info["3piece"] >= 1:
+            avaliable_spots_horizontal = board.possible_3boat_horizontal_positions()
+            avaliable_spots_vertical = board.possible_3boat_vertical_positions()
+            for avaliable_spot in avaliable_spots_horizontal:
+                possible_actions.append(["3boat_horizontal", avaliable_spot])
+            for avaliable_spot in avaliable_spots_vertical:
+                possible_actions.append(["3boat_vertical", avaliable_spot])
+        elif state.board.boat_info["2piece"] >= 1:
+            avaliable_spots_horizontal = board.possible_2boat_horizontal_positions()
+            avaliable_spots_vertical = board.possible_2boat_vertical_positions()
+            for avaliable_spot in avaliable_spots_horizontal:
+                possible_actions.append(["2boat_horizontal", avaliable_spot])
+            for avaliable_spot in avaliable_spots_vertical:
+                possible_actions.append(["2boat_vertical", avaliable_spot])
+        elif state.board.boat_info["1piece"] >= 1:
+            avaliable_spots = board.possible_1boat_positions()
+            for avaliable_spot in avaliable_spots:
+                possible_actions.append(["1boat", avaliable_spot])
+
+        return possible_actions
 
     def result(self, state: BimaruState, action):
         """Retorna o estado resultante de executar a 'action' sobre
         'state' passado como argumento. A ação a executar deve ser uma
         das presentes na lista obtida pela execução de
         self.actions(state)."""
-        pass
+        action_name = action[0]
+        row, col = action[1][0], action[1][1]
+        if action_name == "4boat_horizontal":
+            return state.place_4boat_horizontally(row, col)
+        elif action_name == "4boat_vertical":
+            print(row, col)
+            return state.place_4boat_vertically(row, col)
+        if action_name == "3boat_horizontal":
+            return state.place_3boat_horizontally(row, col)
+        elif action_name == "3boat_vertical":
+            return state.place_3boat_vertically(row, col)
+        if action_name == "2boat_horizontal":
+            return state.place_2boat_horizontally(row, col)
+        elif action_name == "2boat_vertical":
+            return state.place_2boat_vertically(row, col)
+        elif action_name == "1boat":
+            return state.place_1boat(row, col)
 
     def goal_test(self, state: BimaruState):
         """Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se todas as posições do tabuleiro
         estão preenchidas de acordo com as regras do problema."""
-        pass
+        board_info = state.board.board_info
+        board_occupied = state.board.board_occupied
+        boat_info = state.board.boat_info
+
+        for indiviual_boat_info in boat_info.values():
+            if indiviual_boat_info != 0:
+                return False
+
+        return np.array_equal(board_info, board_occupied)
 
     def h(self, node: Node):
         """Função heuristica utilizada para a procura A*."""
@@ -394,13 +572,20 @@ if __name__ == "__main__":
     print(board.board_occupied)
     print(board.board_representation)
     print(board.boat_info)
-    print(board.possible_4boat_horizontal_positions())
-    print(board.possible_4boat_vertical_positions())
-    print(board.possible_3boat_horizontal_positions())
-    print(board.possible_3boat_vertical_positions())
-    print(board.possible_2boat_horizontal_positions())
-    print(board.possible_2boat_vertical_positions())
-    print(board.possible_1boat_positions())
+    problem = Bimaru(board)
+    s0 = BimaruState(board)
+
+    s1 = problem.result(s0, ("4boat_vertical", (1, 9)))
+
+    print(s0.board.board_representation)
+#    board.place_4boat_vertically(1, 9)
+#    board.place_3boat_vertically(0, 6)
+#    board.place_3boat_vertically(7, 0)
+#    board.place_2boat_vertically(0, 0)
+#    board.place_2boat_vertically(6, 4)
+#    board.place_2boat_vertically(7, 8)
+#    board.place_1boat(4, 0)
+#    board.place_1boat(4, 7)
 
     # TODO
     # Ler o ficheiro do standard input,

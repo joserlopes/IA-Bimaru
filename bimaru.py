@@ -136,7 +136,8 @@ class Board:
         boat_info = {"4piece": 1, "3piece": 2, "2piece": 3, "1piece": 4}
 
         # Read everything until EOF is reached
-        while line := sys.stdin.readline().split():
+        line = sys.stdin.readline().split()
+        while line:
             if line[0] == "ROW":
                 for row_board_info, index in zip(line[1:], range(10)):
                     board_info[0][index] = int(row_board_info)
@@ -154,6 +155,8 @@ class Board:
                     board_occupied[1][col] += 1
                 if hint == 'C':
                     boat_info["1piece"] -= 1
+
+            line = sys.stdin.readline().split()
 
         return Board(board, board_info, board_occupied, boat_info)
 
@@ -263,13 +266,27 @@ class Board:
         board_occupied = self.board_occupied
         possible_positions = []
         rows_len = cols_len = len(board)
+        hints_counter = {}
 
         for i in range(rows_len):
-            if board_info[0][i] - board_occupied[0][i] >= 4:
+            if board_info[0][i] >= 2:
+                for j in range(cols_len):
+                    if board[i][j] in ('L', 'M', 'R'):
+                        if i in hints_counter:
+                            hints_counter[i] += 1
+                        else:
+                            hints_counter[i] = 1
+
+        for i in range(rows_len):
+            if i in hints_counter:
+                hints_to_count = hints_counter[i]
+            else:
+                hints_to_count = 0
+            if board_info[0][i] - board_occupied[0][i] >= 4 - hints_to_count:
                 # -3 because we want to count with the length of the boat
                 for j in range(cols_len - 3):
-                    if board_info[1][j] - board_occupied[1][j] >= 1 and board_info[1][j + 1] - board_occupied[1][j + 1] >= 1 \
-                        and board_info[1][j + 2] - board_occupied[1][j + 2] >= 1 and board_info[1][j + 3] - board_occupied[1][j + 3] >= 1 \
+                    if board_info[1][j] - board_occupied[1][j] >= 1 - hints_to_count and board_info[1][j + 1] - board_occupied[1][j + 1] >= 1 - hints_to_count\
+                        and board_info[1][j + 2] - board_occupied[1][j + 2] >= 1 - hints_to_count and board_info[1][j + 3] - board_occupied[1][j + 3] >= 1 - hints_to_count\
                         and board[i][j] in ('L', None) and board[i][j + 1] in ('M', None) \
                             and board[i][j + 2] in ('M', None) and board[i][j + 3] in ('R', None):
                         possible_positions.append((i, j))
@@ -284,13 +301,27 @@ class Board:
         board_occupied = self.board_occupied
         possible_positions = []
         rows_len = cols_len = len(board)
+        hints_counter = {}
 
         for i in range(cols_len):
-            if board_info[1][i] - board_occupied[1][i] >= 4:
+            if board_info[1][i] >= 2:
+                for j in range(rows_len):
+                    if board[j][i] in ('T', 'M', 'B'):
+                        if i in hints_counter:
+                            hints_counter[i] += 1
+                        else:
+                            hints_counter[i] = 1
+
+        for i in range(cols_len):
+            if i in hints_counter:
+                hints_to_count = hints_counter[i]
+            else:
+                hints_to_count = 0
+            if board_info[1][i] - board_occupied[1][i] >= 4 - hints_to_count:
                 # -3 because we want to count with the length of the boat
                 for j in range(rows_len - 3):
-                    if board_info[0][j] - board_occupied[0][j] >= 1 and board_info[0][j + 1] - board_occupied[0][j + 1] >= 1 \
-                            and board_info[0][j + 2] - board_occupied[0][j + 2] >= 1 and board_info[0][j + 3] - board_occupied[0][j + 3] >= 1 \
+                    if board_info[0][j] - board_occupied[0][j] >= 1 - hints_to_count and board_info[0][j + 1] - board_occupied[0][j + 1] >= 1 - hints_to_count \
+                            and board_info[0][j + 2] - board_occupied[0][j + 2] >= 1 - hints_to_count and board_info[0][j + 3] - board_occupied[0][j + 3] >= 1 - hints_to_count\
                             and board[j][i] in ('T', None) and board[j + 1][i] in ('M', None) \
                             and board[j + 2][i] in ('M', None) and board[j + 3][i] in ('T', None):
                         possible_positions.append((j, i))
@@ -303,13 +334,27 @@ class Board:
         board_occupied = self.board_occupied
         possible_positions = []
         rows_len = cols_len = len(board)
+        hints_counter = {}
 
         for i in range(rows_len):
-            if board_info[0][i] - board_occupied[0][i] >= 3:
+            if board_info[0][i] >= 2:
+                for j in range(cols_len):
+                    if board[i][j] in ('L', 'M', 'R'):
+                        if i in hints_counter:
+                            hints_counter[i] += 1
+                        else:
+                            hints_counter[i] = 1
+
+        for i in range(rows_len):
+            if i in hints_counter:
+                hints_to_count = hints_counter[i]
+            else:
+                hints_to_count = 0
+            if board_info[0][i] - board_occupied[0][i] >= 3 - hints_to_count:
                 # -2 because we want to count with the length of the boat
                 for j in range(cols_len - 2):
-                    if board_info[1][j] - board_occupied[1][j] >= 1 and board_info[1][j + 1] - board_occupied[1][j + 1] >= 1 \
-                        and board_info[1][j + 2] - board_occupied[1][j + 2] >= 1 \
+                    if board_info[1][j] - board_occupied[1][j] >= 1 - hints_to_count and board_info[1][j + 1] - board_occupied[1][j + 1] >= 1 - hints_to_count \
+                        and board_info[1][j + 2] - board_occupied[1][j + 2] >= 1 - hints_to_count\
                         and board[i][j] in ('L', None) and board[i][j + 1] in ('M', None) \
                             and board[i][j + 2] in ('R', None):
                         possible_positions.append((i, j))
@@ -323,13 +368,27 @@ class Board:
         board_occupied = self.board_occupied
         possible_positions = []
         rows_len = cols_len = len(board)
+        hints_counter = {}
 
         for i in range(cols_len):
-            if board_info[1][i] - board_occupied[1][i] >= 3:
+            if board_info[1][i] >= 2:
+                for j in range(rows_len):
+                    if board[j][i] in ('T', 'M', 'B'):
+                        if i in hints_counter:
+                            hints_counter[i] += 1
+                        else:
+                            hints_counter[i] = 1
+
+        for i in range(cols_len):
+            if i in hints_counter:
+                hints_to_count = hints_counter[i]
+            else:
+                hints_to_count = 0
+            if board_info[1][i] - board_occupied[1][i] >= 3 - hints_to_count:
                 # -2 because we want to count with the length of the boat
                 for j in range(rows_len - 2):
-                    if board_info[0][j] - board_occupied[0][j] >= 1 and board_info[0][j + 1] - board_occupied[0][j + 1] >= 1 \
-                            and board_info[0][j + 2] - board_occupied[0][j + 2] >= 1 \
+                    if board_info[0][j] - board_occupied[0][j] >= 1 - hints_to_count and board_info[0][j + 1] - board_occupied[0][j + 1] >= 1 - hints_to_count\
+                            and board_info[0][j + 2] - board_occupied[0][j + 2] >= 1 - hints_to_count\
                             and board[j][i] in ('T', None) and board[j + 1][i] in ('M', None) \
                             and board[j + 2][i] in ('B', None):
                         possible_positions.append((j, i))
@@ -342,12 +401,26 @@ class Board:
         board_occupied = self.board_occupied
         possible_positions = []
         rows_len = cols_len = len(board)
+        hints_counter = {}
 
         for i in range(rows_len):
-            if board_info[0][i] - board_occupied[0][i] >= 2:
+            if board_info[0][i] >= 2:
+                for j in range(cols_len):
+                    if board[i][j] in ('L', 'R'):
+                        if i in hints_counter:
+                            hints_counter[i] += 1
+                        else:
+                            hints_counter[i] = 1
+
+        for i in range(rows_len):
+            if i in hints_counter:
+                hints_to_count = hints_counter[i]
+            else:
+                hints_to_count = 0
+            if board_info[0][i] - board_occupied[0][i] >= 2 - hints_to_count:
                 # -1 because we want to count with the length of the boat
                 for j in range(cols_len - 1):
-                    if board_info[1][j] - board_occupied[1][j] >= 1 and board_info[1][j + 1] - board_occupied[1][j + 1] >= 1 \
+                    if board_info[1][j] - board_occupied[1][j] >= 1 - hints_to_count and board_info[1][j + 1] - board_occupied[1][j + 1] >= 1 - hints_to_count\
                             and board[i][j] in ('L', None) and board[i][j + 1] in ('R', None):
                         possible_positions.append((i, j))
 
@@ -361,14 +434,28 @@ class Board:
         board_occupied = self.board_occupied
         possible_positions = []
         rows_len = cols_len = len(board)
+        hints_counter = {}
 
         for i in range(cols_len):
-            if board_info[1][i] - board_occupied[1][i] >= 2:
+            if board_info[1][i] >= 2:
+                for j in range(rows_len):
+                    if board[j][i] in ('T', 'B'):
+                        if i in hints_counter:
+                            hints_counter[i] += 1
+                        else:
+                            hints_counter[i] = 1
+
+        for i in range(cols_len):
+            if i in hints_counter:
+                hints_to_count = hints_counter[i]
+            else:
+                hints_to_count = 0
+            if board_info[1][i] - board_occupied[1][i] >= 2 - hints_to_count:
                 # -1 because we want to count with the length of the boat
                 for j in range(rows_len - 1):
-                    if board_info[0][j] - board_occupied[0][j] >= 1 and board_info[0][j + 1] - board_occupied[0][j + 1] >= 1 \
-                            and board[j][i] in ('T', None) and board[j + 1][i] in ('B', None):
-                        possible_positions.append((j, i))
+                    if board_info[0][j] - board_occupied[0][j] >= 1 - hints_to_count and board_info[0][j + 1] - board_occupied[0][j + 1] >= 1 - hints_to_count:
+                        if board[j][i] in ('T', None) and board[j + 1][i] in ('B', None):
+                            possible_positions.append((j, i))
 
         return possible_positions
 
@@ -551,8 +638,7 @@ class Bimaru(Problem):
             for avaliable_spot in avaliable_spots:
                 possible_actions.append(["1boat", avaliable_spot])
 
-        print(state.board.board_representation)
-        print(possible_actions)
+
         return possible_actions
 
     def result(self, state: BimaruState, action):
@@ -602,22 +688,23 @@ if __name__ == "__main__":
 
     board = Board.parse_instance()
     board.beggining_check()
-    print(board.board_info)
-    print(board.board_occupied)
-    print(board.board_representation)
-    print(board.boat_info)
     problem = Bimaru(board)
-    s0 = BimaruState(board)
+#    s0 = BimaruState(board)
 #    s1 = problem.result(s0, ("4boat_vertical", (1, 9)))
 #    s2 = problem.result(s1, ("3boat_vertical", (7, 0)))
-#    print(s2.board.board_representation)
+#    s3 = problem.result(s2, ("3boat_vertical", (0, 6)))
+#    s4 = problem.result(s3, ("2boat_vertical", (6, 4)))
+#    print(s4.board.board_representation)
+#    print(s4.board.board_info)
+#    print(s4.board.board_occupied)
+#    print(s4.board.possible_2boat_vertical_positions())
 #    print(problem.actions(s2))
 
     # TODO VER A CENA DO PORQUÊ DE NÃO ESTAR A DETETAR A POSIÇÃO DO BARCO DE 3
     # FAZENDO AS AÇÕES À MÃO
 
     goal_node = depth_first_tree_search(problem)
-    print(goal_node)
+    goal_node.state.board.print()
     # TODO
     # Ler o ficheiro do standard input,
     # Usar uma técnica de procura para resolver a instância,

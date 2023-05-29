@@ -33,46 +33,38 @@ class BimaruState:
 
     def place_4boat_horizontally(self, row, col):
         board = self.board
-        print(board.board_representation)
-        board.place_4boat_horizontally(row, col)
-        return BimaruState(board)
+        new_board = board.place_4boat_horizontally(row, col)
+        return BimaruState(new_board)
 
     def place_4boat_vertically(self, row, col):
         board = self.board
-        print(board.board_representation)
-        board.place_4boat_vertically(row, col)
-        print(row, col)
-        return BimaruState(board)
+        new_board = board.place_4boat_vertically(row, col)
+        return BimaruState(new_board)
 
     def place_3boat_horizontally(self, row, col):
         board = self.board
-        print(board.board_representation)
-        board.place_3boat_horizontally(row, col)
-        return BimaruState(board)
+        new_board = board.place_3boat_horizontally(row, col)
+        return BimaruState(new_board)
 
     def place_3boat_vertically(self, row, col):
         board = self.board
-        print(board.board_representation)
-        board.place_3boat_vertically(row, col)
-        return BimaruState(board)
+        new_board = board.place_3boat_vertically(row, col)
+        return BimaruState(new_board)
 
     def place_2boat_horizontally(self, row, col):
         board = self.board
-        print(board.board_representation)
-        board.place_2boat_horizontally(row, col)
-        return BimaruState(board)
+        new_board = board.place_2boat_horizontally(row, col)
+        return BimaruState(new_board)
 
     def place_2boat_vertically(self, row, col):
         board = self.board
-        print(board.board_representation)
-        board.place_2boat_vertically(row, col)
-        return BimaruState(board)
+        new_board = board.place_2boat_vertically(row, col)
+        return BimaruState(new_board)
 
     def place_1boat(self, row, col):
         board = self.board
-        print(board.board_representation)
-        board.place_1boat(row, col)
-        return BimaruState(board)
+        new_board = board.place_1boat(row, col)
+        return BimaruState(new_board)
 
 
 class Board:
@@ -273,7 +265,7 @@ class Board:
         rows_len = cols_len = len(board)
 
         for i in range(rows_len):
-            if board_info[0][i] >= 4:
+            if board_info[0][i] - board_occupied[0][i] >= 4:
                 # -3 because we want to count with the length of the boat
                 for j in range(cols_len - 3):
                     if board_info[1][j] - board_occupied[1][j] >= 1 and board_info[1][j + 1] - board_occupied[1][j + 1] >= 1 \
@@ -294,7 +286,7 @@ class Board:
         rows_len = cols_len = len(board)
 
         for i in range(cols_len):
-            if board_info[1][i] >= 4:
+            if board_info[1][i] - board_occupied[1][i] >= 4:
                 # -3 because we want to count with the length of the boat
                 for j in range(rows_len - 3):
                     if board_info[0][j] - board_occupied[0][j] >= 1 and board_info[0][j + 1] - board_occupied[0][j + 1] >= 1 \
@@ -313,7 +305,7 @@ class Board:
         rows_len = cols_len = len(board)
 
         for i in range(rows_len):
-            if board_info[0][i] >= 3:
+            if board_info[0][i] - board_occupied[0][i] >= 3:
                 # -2 because we want to count with the length of the boat
                 for j in range(cols_len - 2):
                     if board_info[1][j] - board_occupied[1][j] >= 1 and board_info[1][j + 1] - board_occupied[1][j + 1] >= 1 \
@@ -325,7 +317,6 @@ class Board:
         return possible_positions
 
     def possible_3boat_vertical_positions(self):
-        # TODO FALTA FAZER A PARTE DA DIFERENÇA EM VEZ DE SER SÓ >= 0
         """This position refers to the top piece of the boat"""
         board = self.board_representation
         board_info = self.board_info
@@ -334,7 +325,7 @@ class Board:
         rows_len = cols_len = len(board)
 
         for i in range(cols_len):
-            if board_info[1][i] >= 3:
+            if board_info[1][i] - board_occupied[1][i] >= 3:
                 # -2 because we want to count with the length of the boat
                 for j in range(rows_len - 2):
                     if board_info[0][j] - board_occupied[0][j] >= 1 and board_info[0][j + 1] - board_occupied[0][j + 1] >= 1 \
@@ -353,7 +344,7 @@ class Board:
         rows_len = cols_len = len(board)
 
         for i in range(rows_len):
-            if board_info[0][i] >= 2:
+            if board_info[0][i] - board_occupied[0][i] >= 2:
                 # -1 because we want to count with the length of the boat
                 for j in range(cols_len - 1):
                     if board_info[1][j] - board_occupied[1][j] >= 1 and board_info[1][j + 1] - board_occupied[1][j + 1] >= 1 \
@@ -372,7 +363,7 @@ class Board:
         rows_len = cols_len = len(board)
 
         for i in range(cols_len):
-            if board_info[1][i] >= 2:
+            if board_info[1][i] - board_occupied[1][i] >= 2:
                 # -1 because we want to count with the length of the boat
                 for j in range(rows_len - 1):
                     if board_info[0][j] - board_occupied[0][j] >= 1 and board_info[0][j + 1] - board_occupied[0][j + 1] >= 1 \
@@ -388,7 +379,7 @@ class Board:
         possible_positions = []
         rows_len = cols_len = len(board)
         for i in range(rows_len):
-            if board_info[0][i] >= 1:
+            if board_info[0][i] - board_occupied[0][i] >= 1:
                 for j in range(cols_len):
                     if board_info[1][j] - board_occupied[1][j] >= 1 \
                             and board[i][j] is None:
@@ -397,89 +388,131 @@ class Board:
         return possible_positions
 
     def place_4boat_horizontally(self, row, col):
-        boat_info = self.boat_info
+        board_rep = self.board_representation.copy()
+        boat_info = self.boat_info.copy()
+        board_occupied = self.board_occupied.copy()
+        board_info = self.board_info
+        new_board = Board(board_rep, board_info, board_occupied, boat_info)
         for i in range(4):
             if self.get_value(row, col + i) is None:
                 if i == 0:
-                    self.put_piece(row, col + i, 'l')
+                    Board.put_piece(new_board, row, col + i, 'l')
                 elif i == 1:
-                    self.put_piece(row, col + i, 'm')
+                    Board.put_piece(new_board, row, col + i, 'm')
                 elif i == 2:
-                    self.put_piece(row, col + i, 'm')
+                    Board.put_piece(new_board, row, col + i, 'm')
                 elif i == 3:
-                    self.put_piece(row, col + i, 'r')
+                    Board.put_piece(new_board, row, col + i, 'r')
 
-        boat_info["4piece"] -= 1
+        new_board.boat_info["4piece"] -= 1
+
+        return new_board
 
     def place_4boat_vertically(self, row, col):
-        boat_info = self.boat_info
+        board_rep = self.board_representation.copy()
+        boat_info = self.boat_info.copy()
+        board_occupied = self.board_occupied.copy()
+        board_info = self.board_info
+        new_board = Board(board_rep, board_info, board_occupied, boat_info)
         for i in range(4):
             if self.get_value(row + i, col) is None:
                 if i == 0:
-                    self.put_piece(row, col, 't')
+                    Board.put_piece(new_board, row + i, col, 't')
                 elif i == 1:
-                    self.put_piece(row + i, col, 'm')
+                    Board.put_piece(new_board, row + i, col, 'm')
                 elif i == 2:
-                    self.put_piece(row + i, col, 'm')
+                    Board.put_piece(new_board, row + i, col, 'm')
                 elif i == 3:
-                    self.put_piece(row + i, col, 'b')
+                    Board.put_piece(new_board, row + i, col, 'b')
 
-        boat_info["4piece"] -= 1
+        new_board.boat_info["4piece"] -= 1
+
+        return new_board
 
     def place_3boat_horizontally(self, row, col):
-        boat_info = self.boat_info
+        board_rep = self.board_representation.copy()
+        boat_info = self.boat_info.copy()
+        board_occupied = self.board_occupied.copy()
+        board_info = self.board_info
+        new_board = Board(board_rep, board_info, board_occupied, boat_info)
         for i in range(3):
             if self.get_value(row, col + i) is None:
                 if i == 0:
-                    self.put_piece(row, col + i, 'l')
+                    Board.put_piece(new_board, row, col + i, 'l')
                 elif i == 1:
-                    self.put_piece(row, col + i, 'm')
+                    Board.put_piece(new_board, row, col + i, 'm')
                 elif i == 2:
-                    self.put_piece(row, col + i, 'r')
+                    Board.put_piece(new_board, row, col + i, 'r')
 
-        boat_info["3piece"] -= 1
+        new_board.boat_info["3piece"] -= 1
+
+        return new_board
 
     def place_3boat_vertically(self, row, col):
-        boat_info = self.boat_info
+        board_rep = self.board_representation.copy()
+        boat_info = self.boat_info.copy()
+        board_occupied = self.board_occupied.copy()
+        board_info = self.board_info
+        new_board = Board(board_rep, board_info, board_occupied, boat_info)
         for i in range(3):
             if self.get_value(row + i, col) is None:
                 if i == 0:
-                    self.put_piece(row, col, 't')
+                    Board.put_piece(new_board, row + i, col, 't')
                 elif i == 1:
-                    self.put_piece(row + i, col, 'm')
+                    Board.put_piece(new_board, row + i, col, 'm')
                 elif i == 2:
-                    self.put_piece(row + i, col, 'b')
+                    Board.put_piece(new_board, row + i, col, 'b')
 
-        boat_info["3piece"] -= 1
+        new_board.boat_info["3piece"] -= 1
+
+        return new_board
 
     def place_2boat_horizontally(self, row, col):
-        boat_info = self.boat_info
+        board_rep = self.board_representation.copy()
+        boat_info = self.boat_info.copy()
+        board_occupied = self.board_occupied.copy()
+        board_info = self.board_info
+        new_board = Board(board_rep, board_info, board_occupied, boat_info)
         for i in range(2):
             if self.get_value(row, col + i) is None:
                 if i == 0:
-                    self.put_piece(row, col + i, 'l')
+                    Board.put_piece(new_board, row, col + i, 'l')
                 elif i == 1:
-                    self.put_piece(row, col + i, 'r')
+                    Board.put_piece(new_board, row, col + i, 'r')
 
-        boat_info["2piece"] -= 1
+        new_board.boat_info["2piece"] -= 1
+
+        return new_board
 
     def place_2boat_vertically(self, row, col):
-        boat_info = self.boat_info
+        board_rep = self.board_representation.copy()
+        boat_info = self.boat_info.copy()
+        board_occupied = self.board_occupied.copy()
+        board_info = self.board_info
+        new_board = Board(board_rep, board_info, board_occupied, boat_info)
         for i in range(2):
             if self.get_value(row + i, col) is None:
                 if i == 0:
-                    self.put_piece(row, col, 't')
+                    Board.put_piece(new_board, row + i, col, 't')
                 elif i == 1:
-                    self.put_piece(row + i, col, 'b')
+                    Board.put_piece(new_board, row + i, col, 'b')
 
-        boat_info["2piece"] -= 1
+        new_board.boat_info["2piece"] -= 1
+
+        return new_board
 
     def place_1boat(self, row, col):
-        boat_info = self.boat_info
+        board_rep = self.board_representation.copy()
+        boat_info = self.boat_info.copy()
+        board_occupied = self.board_occupied.copy()
+        board_info = self.board_info
+        new_board = Board(board_rep, board_info, board_occupied, boat_info)
         if self.get_value(row, col) is None:
-            self.put_piece(row, col, 'c')
+            Board.put_piece(new_board, row, col, 'c')
 
-        boat_info["1piece"] -= 1
+        new_board.boat_info["1piece"] -= 1
+
+        return Board(board_rep, board_info, board_occupied, boat_info)
 
 
 class Bimaru(Problem):
@@ -495,7 +528,6 @@ class Bimaru(Problem):
         if state.board.boat_info["4piece"] == 1:
             avaliable_spots_horizontal = board.possible_4boat_horizontal_positions()
             avaliable_spots_vertical = board.possible_4boat_vertical_positions()
-            print(avaliable_spots_horizontal, avaliable_spots_vertical)
             for avaliable_spot in avaliable_spots_horizontal:
                 possible_actions.append(["4boat_horizontal", avaliable_spot])
             for avaliable_spot in avaliable_spots_vertical:
@@ -519,6 +551,8 @@ class Bimaru(Problem):
             for avaliable_spot in avaliable_spots:
                 possible_actions.append(["1boat", avaliable_spot])
 
+        print(state.board.board_representation)
+        print(possible_actions)
         return possible_actions
 
     def result(self, state: BimaruState, action):
@@ -531,12 +565,12 @@ class Bimaru(Problem):
         if action_name == "4boat_horizontal":
             return state.place_4boat_horizontally(row, col)
         elif action_name == "4boat_vertical":
-            print(row, col)
             return state.place_4boat_vertically(row, col)
         if action_name == "3boat_horizontal":
             return state.place_3boat_horizontally(row, col)
         elif action_name == "3boat_vertical":
-            return state.place_3boat_vertically(row, col)
+            new_state = state.place_3boat_vertically(row, col)
+            return new_state
         if action_name == "2boat_horizontal":
             return state.place_2boat_horizontally(row, col)
         elif action_name == "2boat_vertical":
@@ -574,19 +608,16 @@ if __name__ == "__main__":
     print(board.boat_info)
     problem = Bimaru(board)
     s0 = BimaruState(board)
+#    s1 = problem.result(s0, ("4boat_vertical", (1, 9)))
+#    s2 = problem.result(s1, ("3boat_vertical", (7, 0)))
+#    print(s2.board.board_representation)
+#    print(problem.actions(s2))
 
-    s1 = problem.result(s0, ("4boat_vertical", (1, 9)))
+    # TODO VER A CENA DO PORQUÊ DE NÃO ESTAR A DETETAR A POSIÇÃO DO BARCO DE 3
+    # FAZENDO AS AÇÕES À MÃO
 
-    print(s0.board.board_representation)
-#    board.place_4boat_vertically(1, 9)
-#    board.place_3boat_vertically(0, 6)
-#    board.place_3boat_vertically(7, 0)
-#    board.place_2boat_vertically(0, 0)
-#    board.place_2boat_vertically(6, 4)
-#    board.place_2boat_vertically(7, 8)
-#    board.place_1boat(4, 0)
-#    board.place_1boat(4, 7)
-
+    goal_node = depth_first_tree_search(problem)
+    print(goal_node)
     # TODO
     # Ler o ficheiro do standard input,
     # Usar uma técnica de procura para resolver a instância,

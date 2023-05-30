@@ -126,7 +126,7 @@ class Board:
         # The structure that holds the information relative
         # to the rows and columns. The first row refers to the rows and
         # the second to the columns
-        board_info = [[0 for x in range(10)] for y in range(2)]
+        board_info = [[None for x in range(10)] for y in range(2)]
 
         board_occupied = [[0 for x in range(10)] for y in range(2)]
         # Transform the 2D list into an np.array to easily make a
@@ -237,6 +237,44 @@ class Board:
                         if not board[new_row][new_col]:
                             board[new_row][new_col] = '.'
 
+    def complete_boat_hints(self):
+        board = self.board_representation
+        board_info = self.boat_info
+        horizontal_boats = np.where(board == 'L')
+        vertical_boats = np.where(board == 'T')
+
+        if np.any(horizontal_boats):
+            for i in range(len(horizontal_boats[0])):
+                row = horizontal_boats[0][i]
+                col = horizontal_boats[1][i]
+                if board[row][col+1] is None:
+                    continue
+                elif board[row][col+1] == 'R':
+                    board_info['2piece'] -= 1
+                elif board[row][col+1] == 'M' and\
+                        board[row][col+2] == 'R':
+                    board_info['3piece'] -= 1
+                elif board[row][col+1] == 'M' and\
+                        board[row][col+2] == 'M' and\
+                        board[row][col+3] == 'R':
+                    board_info['4piece'] -= 1
+
+        if np.any(vertical_boats):
+            for i in range(len(vertical_boats[0])):
+                row = vertical_boats[0][i]
+                col = vertical_boats[1][i]
+                if board[row+1][col] is None:
+                    continue
+                elif board[row+1][col] == 'B':
+                    board_info['2piece'] -= 1
+                elif board[row+1][col] == 'M'\
+                        and board[row+2][col] == 'B':
+                    board_info['3piece'] -= 1
+                elif board[row+1][col] == 'M'\
+                        and board[row+2][col] == 'M'\
+                        and board[row+3][col] == 'B':
+                    board_info['4piece'] -= 1
+
     def put_piece(self, row, col, piece_type):
         board = self.board_representation
         board_occupied = self.board_occupied
@@ -259,70 +297,68 @@ class Board:
                     board[new_row][new_col] = '.'
 
     def possible_4boat_horizontal_positions(self):
+        # TODO FALTA FAZER A PARTE DA DIFERENÇA EM VEZ DE SER SÓ >= 0
         """This position refers to the top piece of the boat"""
         board = self.board_representation
         board_info = self.board_info
         board_occupied = self.board_occupied
         possible_positions = []
         rows_len = cols_len = len(board)
-        hints_counter = {}
+        already_occupied = 0
 
         for i in range(rows_len):
-            if board_info[0][i] >= 2:
-                for j in range(cols_len):
-                    if board[i][j] in ('L', 'M', 'R'):
-                        if i in hints_counter:
-                            hints_counter[i] += 1
-                        else:
-                            hints_counter[i] = 1
-
-        for i in range(rows_len):
-            if i in hints_counter:
-                hints_to_count = hints_counter[i]
-            else:
-                hints_to_count = 0
-            if board_info[0][i] - board_occupied[0][i] >= 4 - hints_to_count:
+            if board_info[0][i] != board_occupied[0][i] and board_info[0][i] >= 4:
                 # -3 because we want to count with the length of the boat
                 for j in range(cols_len - 3):
-                    if board_info[1][j] - board_occupied[1][j] >= 1 - hints_to_count and board_info[1][j + 1] - board_occupied[1][j + 1] >= 1 - hints_to_count\
-                        and board_info[1][j + 2] - board_occupied[1][j + 2] >= 1 - hints_to_count and board_info[1][j + 3] - board_occupied[1][j + 3] >= 1 - hints_to_count\
-                        and board[i][j] in ('L', None) and board[i][j + 1] in ('M', None) \
-                            and board[i][j + 2] in ('M', None) and board[i][j + 3] in ('R', None):
-                        possible_positions.append((i, j))
-
+                    if (board_info[1][j] - board_occupied[1][j] >= 1 or board[i][j] == 'L') \
+                            and (board_info[1][j + 1] - board_occupied[1][j + 1] >= 1 or board[i][j + 1] == 'M')\
+                            and (board_info[1][j + 2] - board_occupied[1][j + 2] >= 1 or board[i][j + 2] == 'M')\
+                            and (board_info[1][j + 3] - board_occupied[1][j + 3] >= 1 or board[i][j + 3] == 'R')\
+                            and board[i][j] in ('L',None) and board[i][j + 1] in ('M',None) \
+                            and board[i][j + 2] in ('M',None) and board[i][j + 3] in ('R',None):
+                        if board[i][j] == 'L':
+                            already_occupied+=1
+                        if board[i][j + 1] == 'M':
+                            already_occupied+=1
+                        if board[i][j + 2] == 'M':
+                            already_occupied+=1
+                        if board[i][j + 3] == 'R':
+                            already_occupied+=1
+                        if board_occupied[0][i] - already_occupied + 4 <= board_info[0][i]:
+                            possible_positions.append((i, j))
         return possible_positions
 
     def possible_4boat_vertical_positions(self):
+        # TODO FALTA FAZER A PARTE DA DIFERENÇA EM VEZ DE SER SÓ >= 0
         """This position refers to the top piece of the boat"""
         board = self.board_representation
         board_info = self.board_info
         board_occupied = self.board_occupied
         possible_positions = []
         rows_len = cols_len = len(board)
-        hints_counter = {}
+        already_occupied = 0
+
 
         for i in range(cols_len):
-            if board_info[1][i] >= 2:
-                for j in range(rows_len):
-                    if board[j][i] in ('T', 'M', 'B'):
-                        if i in hints_counter:
-                            hints_counter[i] += 1
-                        else:
-                            hints_counter[i] = 1
-
-        for i in range(cols_len):
-            if i in hints_counter:
-                hints_to_count = hints_counter[i]
-            else:
-                hints_to_count = 0
-            if board_info[1][i] - board_occupied[1][i] >= 4 - hints_to_count:
+            if board_info[1][i] != board_occupied[1][i] and board_info[1][i] >= 4 :
                 # -3 because we want to count with the length of the boat
                 for j in range(rows_len - 3):
-                    if board_info[0][j] - board_occupied[0][j] >= 1 - hints_to_count and board_info[0][j + 1] - board_occupied[0][j + 1] >= 1 - hints_to_count \
-                            and board_info[0][j + 2] - board_occupied[0][j + 2] >= 1 - hints_to_count and board_info[0][j + 3] - board_occupied[0][j + 3] >= 1 - hints_to_count\
-                            and board[j][i] in ('T', None) and board[j + 1][i] in ('M', None) \
-                            and board[j + 2][i] in ('M', None) and board[j + 3][i] in ('T', None):
-                        possible_positions.append((j, i))
+                    if (board_info[0][j] - board_occupied[0][j] >= 1 or board[j][i] == 'T') \
+                            and (board_info[0][j + 1] - board_occupied[0][j + 1] >= 1 or board[j + 1][i] == 'M')\
+                            and (board_info[0][j + 2] - board_occupied[0][j + 2] >= 1 or board[j + 2][i] == 'M')\
+                            and (board_info[0][j + 3] - board_occupied[0][j + 3] >= 1 or board[j + 3][i] == 'B')\
+                            and board[j][i] in ('T',None) and board[j + 1][i] in ('M',None) \
+                            and board[j + 2][i] in ('M',None) and board[j + 3][i] in ('B',None):
+                        if board[j][i] == 'T':
+                            already_occupied+=1
+                        if board[j + 1][i] == 'M':
+                            already_occupied+=1
+                        if board[j + 2][i] == 'M':
+                            already_occupied+=1
+                        if board[j + 3][i] == 'B':
+                            already_occupied+=1
+                        if board_occupied[1][i] - already_occupied + 4 <= board_info[1][i]:
+                            possible_positions.append((j, i))
 
         return possible_positions
 
@@ -332,31 +368,25 @@ class Board:
         board_occupied = self.board_occupied
         possible_positions = []
         rows_len = cols_len = len(board)
-        hints_counter = {}
+        already_occupied = 0
 
         for i in range(rows_len):
-            if board_info[0][i] >= 2:
-                for j in range(cols_len):
-                    if board[i][j] in ('L', 'M', 'R'):
-                        if i in hints_counter:
-                            hints_counter[i] += 1
-                        else:
-                            hints_counter[i] = 1
-
-        for i in range(rows_len):
-            if i in hints_counter:
-                hints_to_count = hints_counter[i]
-            else:
-                hints_to_count = 0
-            if board_info[0][i] - board_occupied[0][i] >= 3 - hints_to_count:
+            if board_info[0][i] - board_occupied[0][i] != 0 and board_info[0][i] >= 3:
                 # -2 because we want to count with the length of the boat
                 for j in range(cols_len - 2):
-                    if board_info[1][j] - board_occupied[1][j] >= 1 - hints_to_count and board_info[1][j + 1] - board_occupied[1][j + 1] >= 1 - hints_to_count \
-                        and board_info[1][j + 2] - board_occupied[1][j + 2] >= 1 - hints_to_count\
-                        and board[i][j] in ('L', None) and board[i][j + 1] in ('M', None) \
-                            and board[i][j + 2] in ('R', None):
-                        possible_positions.append((i, j))
-
+                    if (board_info[1][j] - board_occupied[1][j] >= 1 or board[i][j] == 'L') \
+                            and (board_info[1][j + 1] - board_occupied[1][j + 1] >= 1 or board[i][j + 1] == 'M')\
+                            and (board_info[1][j + 2] - board_occupied[1][j + 2] >= 1 or board[i][j + 2] == 'R')\
+                            and board[i][j] in ('L',None) and board[i][j + 1] in ('M',None) \
+                            and board[i][j + 2] in ('R',None):
+                        if board[i][j] == 'L':
+                            already_occupied+=1
+                        if board[i][j + 1] == 'M':
+                            already_occupied+=1
+                        if board[i][j + 2] == 'R':
+                            already_occupied+=1
+                        if board_occupied[0][i] - already_occupied + 3 <= board_info[0][i]:
+                            possible_positions.append((i, j))
         return possible_positions
 
     def possible_3boat_vertical_positions(self):
@@ -366,31 +396,25 @@ class Board:
         board_occupied = self.board_occupied
         possible_positions = []
         rows_len = cols_len = len(board)
-        hints_counter = {}
+        already_occupied = 0
 
         for i in range(cols_len):
-            if board_info[1][i] >= 2:
-                for j in range(rows_len):
-                    if board[j][i] in ('T', 'M', 'B'):
-                        if i in hints_counter:
-                            hints_counter[i] += 1
-                        else:
-                            hints_counter[i] = 1
-
-        for i in range(cols_len):
-            if i in hints_counter:
-                hints_to_count = hints_counter[i]
-            else:
-                hints_to_count = 0
-            if board_info[1][i] - board_occupied[1][i] >= 3 - hints_to_count:
+            if board_info[1][i] - board_occupied[1][i] != 0 and board_info[1][i] >= 3:
                 # -2 because we want to count with the length of the boat
                 for j in range(rows_len - 2):
-                    if board_info[0][j] - board_occupied[0][j] >= 1 - hints_to_count and board_info[0][j + 1] - board_occupied[0][j + 1] >= 1 - hints_to_count\
-                            and board_info[0][j + 2] - board_occupied[0][j + 2] >= 1 - hints_to_count\
-                            and board[j][i] in ('T', None) and board[j + 1][i] in ('M', None) \
-                            and board[j + 2][i] in ('B', None):
-                        possible_positions.append((j, i))
-
+                    if (board_info[0][j] - board_occupied[0][j] >= 1 or board[j][i] == 'T') \
+                            and (board_info[0][j + 1] - board_occupied[0][j + 1] >= 1 or board[j + 1][i] == 'M')\
+                            and (board_info[0][j + 2] - board_occupied[0][j + 2] >= 1 or board[j + 2][i] == 'B')\
+                            and board[j][i] in ('T',None) and board[j + 1][i] in ('M',None) \
+                            and board[j + 2][i] in ('B',None):
+                        if board[j][i] == 'T':
+                            already_occupied+=1
+                        if board[j + 1][i] == 'M':
+                            already_occupied+=1
+                        if board[j + 2][i] == 'B':
+                            already_occupied+=1
+                        if board_occupied[1][i] - already_occupied + 3 <= board_info[1][i]:
+                            possible_positions.append((j, i))
         return possible_positions
 
     def possible_2boat_horizontal_positions(self):
@@ -399,61 +423,46 @@ class Board:
         board_occupied = self.board_occupied
         possible_positions = []
         rows_len = cols_len = len(board)
-        hints_counter = {}
+        already_occupied = 0
 
         for i in range(rows_len):
-            if board_info[0][i] >= 2:
-                for j in range(cols_len):
-                    if board[i][j] in ('L', 'R'):
-                        if i in hints_counter:
-                            hints_counter[i] += 1
-                        else:
-                            hints_counter[i] = 1
-
-        for i in range(rows_len):
-            if i in hints_counter:
-                hints_to_count = hints_counter[i]
-            else:
-                hints_to_count = 0
-            if board_info[0][i] - board_occupied[0][i] >= 2 - hints_to_count:
+            if board_info[0][i] - board_occupied[0][i] != 0 and board_info[0][i] >= 2:
                 # -1 because we want to count with the length of the boat
                 for j in range(cols_len - 1):
-                    if board_info[1][j] - board_occupied[1][j] >= 1 - hints_to_count and board_info[1][j + 1] - board_occupied[1][j + 1] >= 1 - hints_to_count\
-                            and board[i][j] in ('L', None) and board[i][j + 1] in ('R', None):
-                        possible_positions.append((i, j))
-
+                    if (board_info[1][j] - board_occupied[1][j] >= 1 or board[i][j] == 'L') \
+                            and (board_info[1][j + 1] - board_occupied[1][j + 1] >= 1 or board[i][j + 1] == 'R')\
+                            and board[i][j] in ('L',None) and board[i][j + 1] in ('R',None):
+                        if board[i][j] == 'L':
+                            already_occupied+=1
+                        if board[i][j + 1] == 'R':
+                            already_occupied+=1
+                        if board_occupied[0][i] - already_occupied + 2 <= board_info[0][i]:
+                            possible_positions.append((i, j))
         return possible_positions
 
     def possible_2boat_vertical_positions(self):
+        # TODO FALTA FAZER A PARTE DA DIFERENÇA EM VEZ DE SER SÓ >= 0
         """This position refers to the top piece of the boat"""
         board = self.board_representation
         board_info = self.board_info
         board_occupied = self.board_occupied
         possible_positions = []
         rows_len = cols_len = len(board)
-        hints_counter = {}
+        already_occupied = 0
 
         for i in range(cols_len):
-            if board_info[1][i] >= 2:
-                for j in range(rows_len):
-                    if board[j][i] in ('T', 'B'):
-                        if i in hints_counter:
-                            hints_counter[i] += 1
-                        else:
-                            hints_counter[i] = 1
-
-        for i in range(cols_len):
-            if i in hints_counter:
-                hints_to_count = hints_counter[i]
-            else:
-                hints_to_count = 0
-            if board_info[1][i] - board_occupied[1][i] >= 2 - hints_to_count:
+            if board_info[1][i] != board_occupied[1][i] and board_info[1][i] >= 2:
                 # -1 because we want to count with the length of the boat
                 for j in range(rows_len - 1):
-                    if board_info[0][j] - board_occupied[0][j] >= 1 - hints_to_count and board_info[0][j + 1] - board_occupied[0][j + 1] >= 1 - hints_to_count:
-                        if board[j][i] in ('T', None) and board[j + 1][i] in ('B', None):
+                    if (board_info[0][j] - board_occupied[0][j] >= 1 or board[j][i] == 'T') \
+                            and (board_info[0][j + 1] - board_occupied[0][j + 1] >= 1 or board[j + 1][i] == 'B')\
+                            and board[j][i] in ('T',None) and board[j + 1][i] in ('B',None):
+                        if board[j][i] == 'T':
+                            already_occupied+=1
+                        if board[j + 1][i] == 'B':
+                            already_occupied+=1
+                        if board_occupied[1][i] - already_occupied + 2 <= board_info[1][i]:
                             possible_positions.append((j, i))
-
         return possible_positions
 
     def possible_1boat_positions(self):
@@ -596,7 +605,7 @@ class Board:
 
         new_board.boat_info["1piece"] -= 1
 
-        return new_board
+        return Board(board_rep, board_info, board_occupied, boat_info)
 
 
 class Bimaru(Problem):
@@ -648,12 +657,12 @@ class Bimaru(Problem):
             return state.place_4boat_horizontally(row, col)
         elif action_name == "4boat_vertical":
             return state.place_4boat_vertically(row, col)
-        if action_name == "3boat_horizontal":
+        elif action_name == "3boat_horizontal":
             return state.place_3boat_horizontally(row, col)
         elif action_name == "3boat_vertical":
             new_state = state.place_3boat_vertically(row, col)
             return new_state
-        if action_name == "2boat_horizontal":
+        elif action_name == "2boat_horizontal":
             return state.place_2boat_horizontally(row, col)
         elif action_name == "2boat_vertical":
             return state.place_2boat_vertically(row, col)
@@ -676,14 +685,34 @@ class Bimaru(Problem):
 
     def h(self, node: Node):
         """Função heuristica utilizada para a procura A*."""
-        pass
+        # TODO
+        # ver a cena de ser o número de barcos que ainda falta por
 
 
 if __name__ == "__main__":
 
     board = Board.parse_instance()
     board.beggining_check()
+    board.complete_boat_hints()
     problem = Bimaru(board)
+#    s0 = BimaruState(board)
+#    s1 = problem.result(s0, ("4boat_vertical", (1, 9)))
+#    s2 = problem.result(s1, ("3boat_vertical", (7, 0)))
+#    s3 = problem.result(s2, ("3boat_vertical", (0, 6)))
+#    s4 = problem.result(s3, ("2boat_vertical", (6, 4)))
+#    print(s4.board.board_representation)
+#    print(s4.board.board_info)
+#    print(s4.board.board_occupied)
+#    print(s4.board.possible_2boat_vertical_positions())
+#    print(problem.actions(s2))
+
+    # TODO VER A CENA DO PORQUÊ DE NÃO ESTAR A DETETAR A POSIÇÃO DO BARCO DE 3
+    # FAZENDO AS AÇÕES À MÃO
 
     goal_node = depth_first_tree_search(problem)
     goal_node.state.board.print()
+    # TODO
+    # Ler o ficheiro do standard input,
+    # Usar uma técnica de procura para resolver a instância,
+    # Retirar a solução a partir do nó resultante,
+    # Imprimir para o standard output no formato indicado.

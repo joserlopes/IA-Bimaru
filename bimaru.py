@@ -126,7 +126,7 @@ class Board:
         # The structure that holds the information relative
         # to the rows and columns. The first row refers to the rows and
         # the second to the columns
-        board_info = [[None for x in range(10)] for y in range(2)]
+        board_info = [[0 for x in range(10)] for y in range(2)]
 
         board_occupied = [[0 for x in range(10)] for y in range(2)]
         # Transform the 2D list into an np.array to easily make a
@@ -259,7 +259,6 @@ class Board:
                     board[new_row][new_col] = '.'
 
     def possible_4boat_horizontal_positions(self):
-        # TODO FALTA FAZER A PARTE DA DIFERENÇA EM VEZ DE SER SÓ >= 0
         """This position refers to the top piece of the boat"""
         board = self.board_representation
         board_info = self.board_info
@@ -294,7 +293,6 @@ class Board:
         return possible_positions
 
     def possible_4boat_vertical_positions(self):
-        # TODO FALTA FAZER A PARTE DA DIFERENÇA EM VEZ DE SER SÓ >= 0
         """This position refers to the top piece of the boat"""
         board = self.board_representation
         board_info = self.board_info
@@ -427,7 +425,6 @@ class Board:
         return possible_positions
 
     def possible_2boat_vertical_positions(self):
-        # TODO FALTA FAZER A PARTE DA DIFERENÇA EM VEZ DE SER SÓ >= 0
         """This position refers to the top piece of the boat"""
         board = self.board_representation
         board_info = self.board_info
@@ -599,7 +596,7 @@ class Board:
 
         new_board.boat_info["1piece"] -= 1
 
-        return Board(board_rep, board_info, board_occupied, boat_info)
+        return new_board
 
 
 class Bimaru(Problem):
@@ -637,7 +634,6 @@ class Bimaru(Problem):
             avaliable_spots = board.possible_1boat_positions()
             for avaliable_spot in avaliable_spots:
                 possible_actions.append(["1boat", avaliable_spot])
-
 
         return possible_actions
 
@@ -680,8 +676,7 @@ class Bimaru(Problem):
 
     def h(self, node: Node):
         """Função heuristica utilizada para a procura A*."""
-        # TODO
-        # ver a cena de ser o número de barcos que ainda falta por
+        pass
 
 
 if __name__ == "__main__":
@@ -689,24 +684,6 @@ if __name__ == "__main__":
     board = Board.parse_instance()
     board.beggining_check()
     problem = Bimaru(board)
-#    s0 = BimaruState(board)
-#    s1 = problem.result(s0, ("4boat_vertical", (1, 9)))
-#    s2 = problem.result(s1, ("3boat_vertical", (7, 0)))
-#    s3 = problem.result(s2, ("3boat_vertical", (0, 6)))
-#    s4 = problem.result(s3, ("2boat_vertical", (6, 4)))
-#    print(s4.board.board_representation)
-#    print(s4.board.board_info)
-#    print(s4.board.board_occupied)
-#    print(s4.board.possible_2boat_vertical_positions())
-#    print(problem.actions(s2))
-
-    # TODO VER A CENA DO PORQUÊ DE NÃO ESTAR A DETETAR A POSIÇÃO DO BARCO DE 3
-    # FAZENDO AS AÇÕES À MÃO
 
     goal_node = depth_first_tree_search(problem)
     goal_node.state.board.print()
-    # TODO
-    # Ler o ficheiro do standard input,
-    # Usar uma técnica de procura para resolver a instância,
-    # Retirar a solução a partir do nó resultante,
-    # Imprimir para o standard output no formato indicado.

@@ -69,6 +69,7 @@ class BimaruState:
 
 class Board:
     """Representação interna de um tabuleiro de Bimaru."""
+
     def __init__(self, board_representation: list, board_info: list, board_occupied: list, boat_info: dict, hints=0):
         self.board_representation = board_representation
         self.board_info = board_info
@@ -236,7 +237,8 @@ class Board:
             for col in range(cols_num):
                 piece_type = self.get_value(row, col)
                 if piece_type not in (None, 'W', '.'):
-                    adjacents_coord = self.neighbors_for_water(row, col, piece_type)
+                    adjacents_coord = self.neighbors_for_water(
+                        row, col, piece_type)
                     for new_row, new_col in adjacents_coord:
                         if not board[new_row][new_col]:
                             board[new_row][new_col] = '.'
@@ -311,6 +313,8 @@ class Board:
         already_occupied = 0
 
         for i in range(rows_len):
+            if len(possible_positions) >= 5:
+                return possible_positions
             if hint_number == 0:
                 if board_info[0][i] - board_occupied[0][i] >= 4:
                     for j in range(cols_len - 3):
@@ -318,8 +322,8 @@ class Board:
                                 and (board_info[1][j + 1] - board_occupied[1][j + 1] >= 1 or board[i][j + 1] == 'M')\
                                 and (board_info[1][j + 2] - board_occupied[1][j + 2] >= 1 or board[i][j + 2] == 'M')\
                                 and (board_info[1][j + 3] - board_occupied[1][j + 3] >= 1 or board[i][j + 3] == 'R')\
-                                and board[i][j] in ('L',None) and board[i][j + 1] in ('M',None) \
-                                and board[i][j + 2] in ('M',None) and board[i][j + 3] in ('R',None):
+                                and board[i][j] in ('L', None) and board[i][j + 1] in ('M', None) \
+                                and board[i][j + 2] in ('M', None) and board[i][j + 3] in ('R', None):
                             if board_occupied[0][i] + 4 <= board_info[0][i]:
                                 possible_positions.append((i, j))
             elif board_info[0][i] != board_occupied[0][i] and board_info[0][i] >= 4:
@@ -329,8 +333,8 @@ class Board:
                             and (board_info[1][j + 1] - board_occupied[1][j + 1] >= 1 or board[i][j + 1] == 'M')\
                             and (board_info[1][j + 2] - board_occupied[1][j + 2] >= 1 or board[i][j + 2] == 'M')\
                             and (board_info[1][j + 3] - board_occupied[1][j + 3] >= 1 or board[i][j + 3] == 'R')\
-                            and board[i][j] in ('L',None) and board[i][j + 1] in ('M',None) \
-                            and board[i][j + 2] in ('M',None) and board[i][j + 3] in ('R',None):
+                            and board[i][j] in ('L', None) and board[i][j + 1] in ('M', None) \
+                            and board[i][j + 2] in ('M', None) and board[i][j + 3] in ('R', None):
                         if board[i][j] == 'L':
                             already_occupied += 1
                         if board[i][j + 1] == 'M':
@@ -354,6 +358,8 @@ class Board:
         already_occupied = 0
 
         for i in range(cols_len):
+            if len(possible_positions) >= 5:
+                return possible_positions
             if hint_number == 0:
                 if board_info[1][i] - board_occupied[1][i] >= 4:
                     for j in range(rows_len - 3):
@@ -397,6 +403,8 @@ class Board:
         already_occupied = 0
 
         for i in range(rows_len):
+            if len(possible_positions) >= 6:
+                return possible_positions
             if hint_number == 0:
                 if board_info[0][i] - board_occupied[0][i] >= 3:
                     for j in range(cols_len - 2):
@@ -436,6 +444,8 @@ class Board:
         already_occupied = 0
 
         for i in range(cols_len):
+            if len(possible_positions) >= 6:
+                return possible_positions
             if hint_number == 0:
                 if board_info[1][i] - board_occupied[1][i] >= 3:
                     for j in range(rows_len - 2):
@@ -473,6 +483,8 @@ class Board:
         already_occupied = 0
 
         for i in range(rows_len):
+            if len(possible_positions) >= 3:
+                return possible_positions
             if hint_number == 0:
                 if board_info[0][i] - board_occupied[0][i] >= 2:
                     for j in range(cols_len - 1):
@@ -506,8 +518,9 @@ class Board:
         already_occupied = 0
 
         for i in range(cols_len):
+            if len(possible_positions) >= 3:
+                return possible_positions
             if hint_number == 0:
-                print("devia estar aqui!")
                 if board_info[1][i] - board_occupied[1][i] >= 2:
                     for j in range(rows_len - 1):
                         if (board_info[0][j] - board_occupied[0][j] >= 1 or board[j][i] == 'T') \
@@ -536,6 +549,8 @@ class Board:
         possible_positions = []
         rows_len = cols_len = len(board)
         for i in range(rows_len):
+            if len(possible_positions) >= 3:
+                return possible_positions
             if board_info[0][i] - board_occupied[0][i] >= 1:
                 for j in range(cols_len):
                     if board_info[1][j] - board_occupied[1][j] >= 1 \
@@ -550,7 +565,8 @@ class Board:
         board_occupied = self.board_occupied.copy()
         board_info = self.board_info
         hints = self.hints
-        new_board = Board(board_rep, board_info, board_occupied, boat_info, hints)
+        new_board = Board(board_rep, board_info,
+                          board_occupied, boat_info, hints)
         for i in range(4):
             if self.get_value(row, col + i) is None:
                 if i == 0:
@@ -572,7 +588,8 @@ class Board:
         board_occupied = self.board_occupied.copy()
         board_info = self.board_info
         hints = self.hints
-        new_board = Board(board_rep, board_info, board_occupied, boat_info, hints)
+        new_board = Board(board_rep, board_info,
+                          board_occupied, boat_info, hints)
         for i in range(4):
             if self.get_value(row + i, col) is None:
                 if i == 0:
@@ -594,7 +611,8 @@ class Board:
         board_occupied = self.board_occupied.copy()
         board_info = self.board_info
         hints = self.hints
-        new_board = Board(board_rep, board_info, board_occupied, boat_info, hints)
+        new_board = Board(board_rep, board_info,
+                          board_occupied, boat_info, hints)
         for i in range(3):
             if self.get_value(row, col + i) is None:
                 if i == 0:
@@ -614,7 +632,8 @@ class Board:
         board_occupied = self.board_occupied.copy()
         board_info = self.board_info
         hints = self.hints
-        new_board = Board(board_rep, board_info, board_occupied, boat_info, hints)
+        new_board = Board(board_rep, board_info,
+                          board_occupied, boat_info, hints)
         for i in range(3):
             if self.get_value(row + i, col) is None:
                 if i == 0:
@@ -634,7 +653,8 @@ class Board:
         board_occupied = self.board_occupied.copy()
         board_info = self.board_info
         hints = self.hints
-        new_board = Board(board_rep, board_info, board_occupied, boat_info, hints)
+        new_board = Board(board_rep, board_info,
+                          board_occupied, boat_info, hints)
         for i in range(2):
             if self.get_value(row, col + i) is None:
                 if i == 0:
@@ -652,7 +672,8 @@ class Board:
         board_occupied = self.board_occupied.copy()
         board_info = self.board_info
         hints = self.hints
-        new_board = Board(board_rep, board_info, board_occupied, boat_info, hints)
+        new_board = Board(board_rep, board_info,
+                          board_occupied, boat_info, hints)
         for i in range(2):
             if self.get_value(row + i, col) is None:
                 if i == 0:
@@ -670,7 +691,8 @@ class Board:
         board_occupied = self.board_occupied.copy()
         board_info = self.board_info
         hints = self.hints
-        new_board = Board(board_rep, board_info, board_occupied, boat_info, hints)
+        new_board = Board(board_rep, board_info,
+                          board_occupied, boat_info, hints)
         if self.get_value(row, col) is None:
             Board.put_piece(new_board, row, col, 'c')
 

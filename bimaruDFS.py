@@ -313,6 +313,8 @@ class Board:
         already_occupied = 0
 
         for i in range(rows_len):
+            if len(possible_positions) >= 5:
+                return possible_positions
             if hint_number == 0:
                 if board_info[0][i] - board_occupied[0][i] >= 4:
                     for j in range(cols_len - 3):
@@ -356,6 +358,8 @@ class Board:
         already_occupied = 0
 
         for i in range(cols_len):
+            if len(possible_positions) >= 5:
+                return possible_positions
             if hint_number == 0:
                 if board_info[1][i] - board_occupied[1][i] >= 4:
                     for j in range(rows_len - 3):
@@ -399,6 +403,8 @@ class Board:
         already_occupied = 0
 
         for i in range(rows_len):
+            if len(possible_positions) >= 6:
+                return possible_positions
             if hint_number == 0:
                 if board_info[0][i] - board_occupied[0][i] >= 3:
                     for j in range(cols_len - 2):
@@ -438,6 +444,8 @@ class Board:
         already_occupied = 0
 
         for i in range(cols_len):
+            if len(possible_positions) >= 6:
+                return possible_positions
             if hint_number == 0:
                 if board_info[1][i] - board_occupied[1][i] >= 3:
                     for j in range(rows_len - 2):
@@ -475,6 +483,8 @@ class Board:
         already_occupied = 0
 
         for i in range(rows_len):
+            if len(possible_positions) >= 3:
+                return possible_positions
             if hint_number == 0:
                 if board_info[0][i] - board_occupied[0][i] >= 2:
                     for j in range(cols_len - 1):
@@ -508,6 +518,8 @@ class Board:
         already_occupied = 0
 
         for i in range(cols_len):
+            if len(possible_positions) >= 3:
+                return possible_positions
             if hint_number == 0:
                 if board_info[1][i] - board_occupied[1][i] >= 2:
                     for j in range(rows_len - 1):
@@ -537,6 +549,8 @@ class Board:
         possible_positions = []
         rows_len = cols_len = len(board)
         for i in range(rows_len):
+            if len(possible_positions) >= 3:
+                return possible_positions
             if board_info[0][i] - board_occupied[0][i] >= 1:
                 for j in range(cols_len):
                     if board_info[1][j] - board_occupied[1][j] >= 1 \
@@ -686,17 +700,6 @@ class Board:
 
         return new_board
 
-    def empty_avaliable_spots(self):
-        board_info = self.board_info
-        board_occupied = self.board_occupied
-        empty_spots = 0
-        for i in range(10):
-            empty_spots += board_info[0][i] - board_occupied[0][i]
-            empty_spots += board_info[1][i] - board_occupied[1][i]
-
-        return empty_spots
-
-
 
 class Bimaru(Problem):
     def __init__(self, board: Board):
@@ -733,7 +736,7 @@ class Bimaru(Problem):
         """Retorna o estado resultante de executar a 'action' sobre
         'state' passado como argumento. A ação a executar deve ser uma
         das presentes na lista obtida pela execução de
-        self.actions(state). """
+        self.actions(state)."""
         action_name = action[0]
         row, col = action[1][0], action[1][1]
         if action_name == "4boat_horizontal":
@@ -767,7 +770,7 @@ class Bimaru(Problem):
 
     def h(self, node: Node):
         """Função heuristica utilizada para a procura A*."""
-        return node.state.board.empty_avaliable_spots()
+        pass
 
 
 if __name__ == "__main__":
@@ -777,5 +780,5 @@ if __name__ == "__main__":
     if board.hints > 1:
         board.complete_boat_hints()
     problem = Bimaru(board)
-    goal_node = recursive_best_first_search(problem, problem.h)
+    goal_node = depth_first_tree_search(problem)
     goal_node.state.board.print()

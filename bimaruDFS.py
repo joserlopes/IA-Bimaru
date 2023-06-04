@@ -32,36 +32,50 @@ class BimaruState:
         return self.id < other.id
 
     def place_4boat_horizontally(self, row, col):
+        """ Returns a new state with a 4 piece boat placed horizontally
+            at the given row and column. """
         board = self.board
         new_board = board.place_4boat_horizontally(row, col)
         return BimaruState(new_board)
 
     def place_4boat_vertically(self, row, col):
+        """ Returns a new state with a 4 piece boat placed vertically
+            at the given row and column. """
         board = self.board
         new_board = board.place_4boat_vertically(row, col)
         return BimaruState(new_board)
 
     def place_3boat_horizontally(self, row, col):
+        """ Returns a new state with a 3 piece boat placed horizontally
+            at the given row and column. """
         board = self.board
         new_board = board.place_3boat_horizontally(row, col)
         return BimaruState(new_board)
 
     def place_3boat_vertically(self, row, col):
+        """ Returns a new state with a 3 piece boat placed vertically
+            at the given row and column. """
         board = self.board
         new_board = board.place_3boat_vertically(row, col)
         return BimaruState(new_board)
 
     def place_2boat_horizontally(self, row, col):
+        """ Returns a new state with a 2 piece boat placed horizontally
+            at the given row and column. """
         board = self.board
         new_board = board.place_2boat_horizontally(row, col)
         return BimaruState(new_board)
 
     def place_2boat_vertically(self, row, col):
+        """ Returns a new state with a 2 piece boat placed vertically
+            at the given row and column. """
         board = self.board
         new_board = board.place_2boat_vertically(row, col)
         return BimaruState(new_board)
 
     def place_1boat(self, row, col):
+        """ Returns a new state with a 1 piece boat placed
+            at the given row and column. """
         board = self.board
         new_board = board.place_1boat(row, col)
         return BimaruState(new_board)
@@ -166,6 +180,7 @@ class Board:
         return Board(board, board_info, board_occupied, boat_info, hints)
 
     def print(self):
+        """ Outputs the board in the corret format """
         for i in range(len(self.board_representation)):
             for j in range(len(self.board_representation)):
                 print(f"{self.get_value(i, j)}", end="")
@@ -244,6 +259,7 @@ class Board:
                             board[new_row][new_col] = '.'
 
     def complete_boat_hints(self):
+        """ Count full boats initially placed by hints """
         board = self.board_representation
         board_info = self.boat_info
         horizontal_boats = np.where(board == 'L')
@@ -282,6 +298,8 @@ class Board:
                     board_info['4piece'] -= 1
 
     def put_piece(self, row, col, piece_type):
+        """ Destructively modifies the board board putting a piece
+            of piece_type in the given row and column """
         board = self.board_representation
         board_occupied = self.board_occupied
         board_info = self.board_info
@@ -303,7 +321,8 @@ class Board:
                     board[new_row][new_col] = '.'
 
     def possible_4boat_horizontal_positions(self):
-        """This position refers to the top piece of the boat"""
+        """ Finds the possible positions in which to put a 4 piece boat
+        in horizontal disposition. This position refers to the left piece of the boat """
         board = self.board_representation
         board_info = self.board_info
         board_occupied = self.board_occupied
@@ -348,7 +367,8 @@ class Board:
         return possible_positions
 
     def possible_4boat_vertical_positions(self):
-        """This position refers to the top piece of the boat"""
+        """ Finds the possible positions in which to put a 4 piece boat
+        in vertical disposition. This position refers to the top piece of the boat """
         board = self.board_representation
         board_info = self.board_info
         board_occupied = self.board_occupied
@@ -394,6 +414,8 @@ class Board:
         return possible_positions
 
     def possible_3boat_horizontal_positions(self):
+        """ Finds the possible positions in which to put a 3 piece boat
+        in horizontal disposition. This position refers to the left piece of the boat """
         board = self.board_representation
         board_info = self.board_info
         board_occupied = self.board_occupied
@@ -434,7 +456,8 @@ class Board:
         return possible_positions
 
     def possible_3boat_vertical_positions(self):
-        """This position refers to the top piece of the boat"""
+        """ Finds the possible positions in which to put a 3 piece boat
+        in vertical disposition. This position refers to the top piece of the boat """
         board = self.board_representation
         board_info = self.board_info
         board_occupied = self.board_occupied
@@ -474,6 +497,8 @@ class Board:
         return possible_positions
 
     def possible_2boat_horizontal_positions(self):
+        """ Finds the possible positions in which to put a 2 piece boat
+        in horizontal disposition. This position refers to the left piece of the boat """
         board = self.board_representation
         board_info = self.board_info
         board_occupied = self.board_occupied
@@ -508,7 +533,8 @@ class Board:
         return possible_positions
 
     def possible_2boat_vertical_positions(self):
-        """This position refers to the top piece of the boat"""
+        """ Finds the possible positions in which to put a 2 piece boat
+        in vertical disposition. This position refers to the top piece of the boat """
         board = self.board_representation
         board_info = self.board_info
         board_occupied = self.board_occupied
@@ -543,6 +569,8 @@ class Board:
         return possible_positions
 
     def possible_1boat_positions(self):
+        """ Finds the possible positions in which to put a 1 piece boat
+        in disposition. """
         board = self.board_representation
         board_info = self.board_info
         board_occupied = self.board_occupied
@@ -560,6 +588,9 @@ class Board:
         return possible_positions
 
     def place_4boat_horizontally(self, row, col):
+        """ Places a 4 piece boat horizontally starting at the given
+            row and column.
+            Returns a new Board with the respective changes. """
         board_rep = self.board_representation.copy()
         boat_info = self.boat_info.copy()
         board_occupied = self.board_occupied.copy()
@@ -583,6 +614,9 @@ class Board:
         return new_board
 
     def place_4boat_vertically(self, row, col):
+        """ Places a 4 piece boat vertically starting at the given
+            row and column.
+            Returns a new Board with the respective changes. """
         board_rep = self.board_representation.copy()
         boat_info = self.boat_info.copy()
         board_occupied = self.board_occupied.copy()
@@ -606,6 +640,9 @@ class Board:
         return new_board
 
     def place_3boat_horizontally(self, row, col):
+        """ Places a 3 piece boat horizontally starting at the given
+            row and column.
+            Returns a new Board with the respective changes. """
         board_rep = self.board_representation.copy()
         boat_info = self.boat_info.copy()
         board_occupied = self.board_occupied.copy()
@@ -627,6 +664,9 @@ class Board:
         return new_board
 
     def place_3boat_vertically(self, row, col):
+        """ Places a 3 piece boat horizontally starting at the given
+            row and column.
+            Returns a new Board with the respective changes. """
         board_rep = self.board_representation.copy()
         boat_info = self.boat_info.copy()
         board_occupied = self.board_occupied.copy()
@@ -648,6 +688,9 @@ class Board:
         return new_board
 
     def place_2boat_horizontally(self, row, col):
+        """ Places a 2 piece boat horizontally starting at the given
+            row and column.
+            Returns a new Board with the respective changes. """
         board_rep = self.board_representation.copy()
         boat_info = self.boat_info.copy()
         board_occupied = self.board_occupied.copy()
@@ -667,6 +710,9 @@ class Board:
         return new_board
 
     def place_2boat_vertically(self, row, col):
+        """ Places a 2 piece boat vertically starting at the given
+            row and column.
+            Returns a new Board with the respective changes. """
         board_rep = self.board_representation.copy()
         boat_info = self.boat_info.copy()
         board_occupied = self.board_occupied.copy()
@@ -685,6 +731,8 @@ class Board:
         return new_board
 
     def place_1boat(self, row, col):
+        """ Places a 1 piece boat at the given row and column.
+            Returns a new Board with the respective changes. """
         board_rep = self.board_representation.copy()
         boat_info = self.boat_info.copy()
         board_occupied = self.board_occupied.copy()

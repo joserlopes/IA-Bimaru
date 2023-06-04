@@ -253,32 +253,32 @@ class Board:
             for i in range(len(horizontal_boats[0])):
                 row = horizontal_boats[0][i]
                 col = horizontal_boats[1][i]
-                if board[row][col+1] is None:
+                if board[row][col + 1] is None:
                     continue
-                elif board[row][col+1] == 'R':
+                elif board[row][col + 1] == 'R':
                     board_info['2piece'] -= 1
-                elif board[row][col+1] == 'M' and\
-                        board[row][col+2] == 'R':
+                elif board[row][col + 1] == 'M' and\
+                        board[row][col + 2] == 'R':
                     board_info['3piece'] -= 1
-                elif board[row][col+1] == 'M' and\
-                        board[row][col+2] == 'M' and\
-                        board[row][col+3] == 'R':
+                elif board[row][col + 1] == 'M' and\
+                        board[row][col + 2] == 'M' and\
+                        board[row][col + 3] == 'R':
                     board_info['4piece'] -= 1
 
         if np.any(vertical_boats):
             for i in range(len(vertical_boats[0])):
                 row = vertical_boats[0][i]
                 col = vertical_boats[1][i]
-                if board[row+1][col] is None:
+                if board[row + 1][col] is None:
                     continue
-                elif board[row+1][col] == 'B':
+                elif board[row + 1][col] == 'B':
                     board_info['2piece'] -= 1
-                elif board[row+1][col] == 'M'\
-                        and board[row+2][col] == 'B':
+                elif board[row + 1][col] == 'M'\
+                        and board[row + 2][col] == 'B':
                     board_info['3piece'] -= 1
-                elif board[row+1][col] == 'M'\
-                        and board[row+2][col] == 'M'\
-                        and board[row+3][col] == 'B':
+                elif board[row + 1][col] == 'M'\
+                        and board[row + 2][col] == 'M'\
+                        and board[row + 3][col] == 'B':
                     board_info['4piece'] -= 1
 
     def put_piece(self, row, col, piece_type):
@@ -680,7 +680,6 @@ class Board:
                     Board.put_piece(new_board, row + i, col, 't')
                 elif i == 1:
                     Board.put_piece(new_board, row + i, col, 'b')
-
         new_board.boat_info["2piece"] -= 1
 
         return new_board
@@ -733,10 +732,10 @@ class Bimaru(Problem):
         return possible_actions
 
     def result(self, state: BimaruState, action):
-        """Retorna o estado resultante de executar a 'action' sobre
+        """ Retorna o estado resultante de executar a 'action' sobre
         'state' passado como argumento. A ação a executar deve ser uma
         das presentes na lista obtida pela execução de
-        self.actions(state)."""
+        self.actions(state). """
         action_name = action[0]
         row, col = action[1][0], action[1][1]
         if action_name == "4boat_horizontal":
